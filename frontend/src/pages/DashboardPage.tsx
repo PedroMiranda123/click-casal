@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiJson } from '../api';
+import { api, apiJson } from '../api';
 import type { Balance, Category, DailyPoint, PaymentMethod, Summary, Transaction, TransactionList } from '../types';
 import { BalanceCard } from '../components/BalanceCard';
 import { CategoryBreakdown } from '../components/CategoryBreakdown';
@@ -75,6 +75,14 @@ export function DashboardPage() {
     loadTransactions();
   }
 
+  async function handleTransactionDeleted(id: string) {
+    const res = await api(`/transactions/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Falha ao excluir lançamento');
+    loadBalance();
+    loadSummary();
+    loadTransactions();
+  }
+
   const timeline: DailyPoint[] = summary?.dailyTimeline ?? [];
   const defaultPaymentMethodId =
     paymentMethods.find((pm) => pm.type === 'DEBIT')?.id ?? paymentMethods[0]?.id ?? '';
@@ -128,6 +136,7 @@ export function DashboardPage() {
           loading={txState === 'loading'}
           error={txState === 'error'}
           onRetry={loadTransactions}
+          onDelete={handleTransactionDeleted}
         />
       </main>
 
