@@ -71,6 +71,33 @@ async function upsertByName(model, entries) {
   }
 }
 
+async function seedStartingBalance() {
+  // Idempotent: only insert if no transactions exist yet
+  const count = await prisma.transaction.count();
+  if (count > 0) return;
+
+  const firstUser = await prisma.user.findFirst();
+  if (!firstUser) throw new Error('No users found — run seedUsers first');
+
+  const lunar = await prisma.paymentMethod.findFirst({ where: { name: 'Lunar' } });
+  if (!lunar) throw new Error('Lunar payment method not found — run upsertByName first');
+
+  await prisma.transaction.create({
+    data: {
+      userId: firstUser.id,
+      paymentMethodId: lunar.id,
+      categoryId: null,
+      type: 'INCOME',
+      originalAmount: 999851, // 9.998,51 DKK in øre
+      originalCurrency: 'DKK',
+      amountDkk: 999851,
+      exchangeRate: null,
+      description: 'Saldo inicial',
+      occurredAt: new Date(),
+    },
+  });
+}
+
 async function main() {
   await seedUsers();
   await upsertByName('paymentMethod', PAYMENT_METHODS);
@@ -78,6 +105,7 @@ async function main() {
     'category',
     CATEGORIES.map((c) => ({ ...c, isDefault: true }))
   );
+  await seedStartingBalance();
 }
 
 main()
