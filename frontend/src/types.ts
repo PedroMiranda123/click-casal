@@ -101,6 +101,30 @@ export interface EventInput {
   description: string | null;
 }
 
+export interface FlyerOffer {
+  id: string;
+  externalId: string;
+  dealerId: string;
+  dealerName: string;
+  name: string;
+  priceOre: number;
+  prePriceOre: number | null;
+  validFrom: string;
+  validUntil: string;
+}
+
+export interface ShoppingListItem {
+  id: string;
+  userId: string;
+  name: string;
+  checked: boolean;
+  matchedOfferId: string | null;
+  matchedAt: string | null;
+  matchedOffer: FlyerOffer | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TransactionInput {
   type: 'INCOME' | 'EXPENSE';
   /** Minor units (øre / centavos) */
