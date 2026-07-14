@@ -76,11 +76,12 @@ export function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-11 rounded-xl px-4 text-sm outline-none border transition-colors focus:border-[--gold]"
+              className="w-full h-11 rounded-xl px-4 outline-none border transition-colors focus:border-[--gold]"
               style={{
                 background: 'rgba(255,255,255,0.7)',
                 borderColor: 'var(--glass-border)',
                 color: 'var(--ink)',
+                fontSize: 16,
               }}
               placeholder="voce@email.com"
               disabled={status === 'loading'}
@@ -98,11 +99,12 @@ export function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-11 rounded-xl px-4 text-sm outline-none border transition-colors"
+              className="w-full h-11 rounded-xl px-4 outline-none border transition-colors"
               style={{
                 background: 'rgba(255,255,255,0.7)',
                 borderColor: 'var(--glass-border)',
                 color: 'var(--ink)',
+                fontSize: 16,
               }}
               placeholder="••••••••"
               disabled={status === 'loading'}

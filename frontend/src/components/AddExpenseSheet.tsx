@@ -133,11 +133,12 @@ export function AddExpenseSheet({ categories, paymentMethods, defaultPaymentMeth
                 value={text}
                 onChange={(e) => { setText(e.target.value); setParseError(null); }}
                 placeholder="Ex: Gastei 250 coroas no Rema, mercado"
-                className="flex-1 h-10 rounded-xl px-4 text-sm outline-none border"
+                className="flex-1 h-10 rounded-xl px-4 outline-none border"
                 style={{
                   background: 'rgba(255,255,255,0.7)',
                   borderColor: 'var(--glass-border)',
                   color: 'var(--ink)',
+                  fontSize: 16,
                 }}
                 aria-label="Registrar transação"
               />
