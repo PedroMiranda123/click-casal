@@ -8,12 +8,14 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  passwordHash String
-  createdAt    DateTime      @default(now())
-  transactions Transaction[]
+  id            String          @id @default(cuid())
+  name          String
+  email         String          @unique
+  passwordHash  String
+  createdAt     DateTime        @default(now())
+  transactions  Transaction[]
+  personEvents  CalendarEvent[]
+  createdEvents CalendarEvent[] @relation("EventCreator")
 }
 
 model PaymentMethod {
@@ -77,4 +79,35 @@ model ExchangeRate {
   fetchedAt    DateTime @default(now())
 
   @@unique([date, fromCurrency, toCurrency])
+}
+
+model CalendarEvent {
+  id             String         @id @default(cuid())
+  title          String
+  type           EventType
+  person         User?          @relation(fields: [personId], references: [id])
+  personId       String?
+  startAt        DateTime
+  allDay         Boolean        @default(true)
+  recurrence     RecurrenceType @default(NONE)
+  recurrenceDays Int[]          @default([])
+  description    String?
+  createdBy      User           @relation("EventCreator", fields: [createdById], references: [id])
+  createdById    String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+enum EventType {
+  BIRTHDAY
+  PAYMENT_DUE
+  SPORTS
+  EXERCISE
+  GENERAL
+}
+
+enum RecurrenceType {
+  NONE
+  YEARLY
+  WEEKLY
 }

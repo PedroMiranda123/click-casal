@@ -65,6 +65,42 @@ export interface TransactionList {
   pagination: { page: number; limit: number; total: number };
 }
 
+export type EventType = 'BIRTHDAY' | 'PAYMENT_DUE' | 'SPORTS' | 'EXERCISE' | 'GENERAL';
+export type RecurrenceType = 'NONE' | 'YEARLY' | 'WEEKLY';
+
+export interface UserSummary {
+  id: string;
+  name: string;
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  type: EventType;
+  person: UserSummary | null;
+  personId: string | null;
+  startAt: string;
+  allDay: boolean;
+  recurrence: RecurrenceType;
+  recurrenceDays: number[];
+  description: string | null;
+  createdBy: UserSummary;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventInput {
+  title: string;
+  type: EventType;
+  personId: string | null;
+  startAt: string;
+  allDay: boolean;
+  recurrence: RecurrenceType;
+  recurrenceDays: number[];
+  description: string | null;
+}
+
 export interface TransactionInput {
   type: 'INCOME' | 'EXPENSE';
   /** Minor units (øre / centavos) */
