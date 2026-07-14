@@ -90,7 +90,7 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
     >
       <div
         className="w-full rounded-t-2xl p-6 pb-10 max-h-[90vh] overflow-y-auto"
-        style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)' }}
+        style={{ background: 'var(--glass-strong)', backdropFilter: 'blur(20px)', border: '1px solid var(--glass-border)' }}
         onPointerDown={e => e.stopPropagation()}
       >
         {/* Header */}

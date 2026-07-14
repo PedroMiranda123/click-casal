@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiJson } from '../api';
+import { api, apiJson } from '../api';
 import AddEventSheet from '../components/AddEventSheet';
 import type { CalendarEvent, EventType, UserSummary } from '../types';
 
@@ -49,6 +49,8 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(isoDateKey(today));
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [confirmingEventId, setConfirmingEventId] = useState<string | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState(false);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -69,6 +71,18 @@ export default function CalendarPage() {
   useEffect(() => {
     apiJson<UserSummary[]>('/users').then(setUsers).catch(() => {});
   }, []);
+
+  async function handleDeleteEvent(id: string) {
+    setDeletingEvent(true);
+    try {
+      const res = await api(`/events/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Falha ao excluir evento');
+      setConfirmingEventId(null);
+      await loadEvents();
+    } finally {
+      setDeletingEvent(false);
+    }
+  }
 
   // Group events by date key
   const byDate = events.reduce<Record<string, CalendarEvent[]>>((acc, evt) => {
@@ -219,47 +233,74 @@ export default function CalendarPage() {
             <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Nenhum evento neste dia.</p>
           ) : (
             <div className="space-y-2">
-              {selectedEvents.map((evt, i) => (
-                <div
-                  key={`${evt.id}-${i}`}
-                  className="rounded-2xl p-4 flex items-start gap-3"
-                  style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
-                    style={{ background: EVENT_TYPE_COLORS[evt.type] }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--ink)' }}>{evt.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>{EVENT_TYPE_LABELS[evt.type]}</span>
-                      {!evt.allDay && (
-                        <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
-                          {new Date(evt.startAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      )}
-                      {evt.person ? (
-                        <span
-                          className="text-xs px-2 py-0.5 rounded-full"
-                          style={{ background: 'var(--blue)', color: '#fff', fontSize: '0.65rem' }}
-                        >
-                          {evt.person.name.split(' ')[0]}
-                        </span>
-                      ) : (
-                        <span
-                          className="text-xs px-2 py-0.5 rounded-full"
-                          style={{ background: 'rgba(0,0,0,0.08)', color: 'var(--ink-muted)', fontSize: '0.65rem' }}
-                        >
-                          Ambos
-                        </span>
-                      )}
+              {selectedEvents.map((evt, i) => {
+                const isConfirming = confirmingEventId === evt.id;
+                return (
+                  <div
+                    key={`${evt.id}-${i}`}
+                    className="rounded-2xl overflow-hidden"
+                    style={{ background: 'var(--glass-strong)', border: '1px solid var(--glass-border)' }}
+                  >
+                    <div className="p-4 flex items-start gap-3">
+                      <span
+                        className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
+                        style={{ background: EVENT_TYPE_COLORS[evt.type] }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate" style={{ color: 'var(--ink)' }}>{evt.title}</p>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>{EVENT_TYPE_LABELS[evt.type]}</span>
+                          {!evt.allDay && (
+                            <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+                              {new Date(evt.startAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                          {evt.person ? (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--blue)', color: '#fff', fontSize: '0.65rem' }}>
+                              {evt.person.name.split(' ')[0]}
+                            </span>
+                          ) : (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,0,0,0.08)', color: 'var(--ink-muted)', fontSize: '0.65rem' }}>
+                              Ambos
+                            </span>
+                          )}
+                        </div>
+                        {evt.description && (
+                          <p className="text-xs mt-1 truncate" style={{ color: 'var(--ink-muted)' }}>{evt.description}</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setConfirmingEventId(isConfirming ? null : evt.id)}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg flex-shrink-0 transition-colors"
+                        style={{ color: isConfirming ? 'var(--coral)' : 'var(--ink-faint)', background: isConfirming ? 'var(--coral-bg)' : 'transparent' }}
+                        aria-label="Excluir evento"
+                      >
+                        <EventTrashIcon />
+                      </button>
                     </div>
-                    {evt.description && (
-                      <p className="text-xs mt-1 truncate" style={{ color: 'var(--ink-muted)' }}>{evt.description}</p>
+                    {isConfirming && (
+                      <div className="px-4 pb-3 flex items-center gap-2 border-t" style={{ borderColor: 'rgba(27,42,56,0.08)' }}>
+                        <p className="text-xs flex-1" style={{ color: 'var(--ink-dim)' }}>Excluir evento?</p>
+                        <button
+                          onClick={() => handleDeleteEvent(evt.id)}
+                          disabled={deletingEvent}
+                          className="text-xs font-semibold px-3 py-1 rounded-lg transition-opacity disabled:opacity-50"
+                          style={{ background: 'var(--coral)', color: '#fff' }}
+                        >
+                          Excluir
+                        </button>
+                        <button
+                          onClick={() => setConfirmingEventId(null)}
+                          className="text-xs font-medium px-3 py-1 rounded-lg"
+                          style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--ink)' }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -283,5 +324,16 @@ export default function CalendarPage() {
         />
       )}
     </div>
+  );
+}
+
+function EventTrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
   );
 }
