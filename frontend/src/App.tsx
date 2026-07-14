@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { HubPage } from './pages/HubPage';
 import { DashboardPage } from './pages/DashboardPage';
+import CalendarPage from './pages/CalendarPage';
 
 export function App() {
   return (
@@ -14,6 +15,7 @@ export function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HubPage />} />
             <Route path="/financas" element={<DashboardPage />} />
+            <Route path="/calendario" element={<CalendarPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

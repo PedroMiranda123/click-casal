@@ -20,6 +20,7 @@ const CARDS: HubCard[] = [
     title: 'Calendário',
     subtitle: 'Eventos e lembretes',
     icon: <CalendarIcon />,
+    route: '/calendario',
   },
   {
     title: 'Viagens',
@@ -82,34 +83,55 @@ export function HubPage() {
           </p>
         </button>
 
-        {/* Coming-soon cards — 2-column grid */}
+        {/* Secondary cards — 2-column grid */}
         <div className="grid grid-cols-2 gap-3">
-          {CARDS.slice(1).map((card) => (
-            <div
-              key={card.title}
-              className="flat-panel rounded-2xl p-4 opacity-50 select-none"
-              aria-disabled="true"
-            >
+          {CARDS.slice(1).map((card) =>
+            card.route ? (
+              <button
+                key={card.title}
+                onClick={() => navigate(card.route!)}
+                className="flat-panel rounded-2xl p-4 text-left transition-all active:scale-[0.97] hover:shadow-sm"
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: 'var(--blue-bg)', color: 'var(--blue)' }}
+                >
+                  {card.icon}
+                </div>
+                <p className="font-display text-base font-semibold leading-tight" style={{ color: 'var(--ink)' }}>
+                  {card.title}
+                </p>
+                <p className="text-xs mt-0.5 leading-snug" style={{ color: 'var(--ink-faint)' }}>
+                  {card.subtitle}
+                </p>
+              </button>
+            ) : (
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                style={{ background: 'var(--blue-bg)', color: 'var(--blue)' }}
+                key={card.title}
+                className="flat-panel rounded-2xl p-4 opacity-50 select-none"
+                aria-disabled="true"
               >
-                {card.icon}
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: 'var(--blue-bg)', color: 'var(--blue)' }}
+                >
+                  {card.icon}
+                </div>
+                <p className="font-display text-base font-semibold leading-tight" style={{ color: 'var(--ink)' }}>
+                  {card.title}
+                </p>
+                <p className="text-xs mt-0.5 leading-snug" style={{ color: 'var(--ink-faint)' }}>
+                  {card.subtitle}
+                </p>
+                <span
+                  className="inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--gold-bg)', color: 'var(--gold)' }}
+                >
+                  Em breve
+                </span>
               </div>
-              <p className="font-display text-base font-semibold leading-tight" style={{ color: 'var(--ink)' }}>
-                {card.title}
-              </p>
-              <p className="text-xs mt-0.5 leading-snug" style={{ color: 'var(--ink-faint)' }}>
-                {card.subtitle}
-              </p>
-              <span
-                className="inline-block mt-2 text-xs font-medium px-2 py-0.5 rounded-full"
-                style={{ background: 'var(--gold-bg)', color: 'var(--gold)' }}
-              >
-                Em breve
-              </span>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </main>
     </div>

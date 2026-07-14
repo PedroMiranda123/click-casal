@@ -23,5 +23,12 @@ module.exports = {
     findUnique: jest.fn(),
     upsert: jest.fn(),
   },
+  calendarEvent: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
   $queryRaw: jest.fn(),
 };

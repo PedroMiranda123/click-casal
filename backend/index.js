@@ -8,6 +8,8 @@ const transactionRoutes = require('./src/routes/transactions');
 const balanceRoutes = require('./src/routes/balance');
 const categoryRoutes = require('./src/routes/categories');
 const paymentMethodRoutes = require('./src/routes/paymentMethods');
+const eventRoutes = require('./src/routes/events');
+const userRoutes = require('./src/routes/users');
 
 const app = express();
 
@@ -30,5 +32,7 @@ app.use('/transactions', transactionRoutes);
 app.use('/balance', balanceRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/payment-methods', paymentMethodRoutes);
+app.use('/events', eventRoutes);
+app.use('/users', userRoutes);
 
 module.exports = app;
