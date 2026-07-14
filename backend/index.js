@@ -10,6 +10,7 @@ const categoryRoutes = require('./src/routes/categories');
 const paymentMethodRoutes = require('./src/routes/paymentMethods');
 const eventRoutes = require('./src/routes/events');
 const userRoutes = require('./src/routes/users');
+const shoppingListRoutes = require('./src/routes/shoppingList');
 
 const app = express();
 
@@ -34,5 +35,6 @@ app.use('/categories', categoryRoutes);
 app.use('/payment-methods', paymentMethodRoutes);
 app.use('/events', eventRoutes);
 app.use('/users', userRoutes);
+app.use('/shopping-list', shoppingListRoutes);
 
 module.exports = app;

@@ -30,5 +30,20 @@ module.exports = {
     update: jest.fn(),
     delete: jest.fn(),
   },
+  shoppingListItem: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  flyerOffer: {
+    findMany: jest.fn(),
+    upsert: jest.fn(),
+    deleteMany: jest.fn(),
+  },
+  aiUsageLog: {
+    create: jest.fn(),
+  },
   $queryRaw: jest.fn(),
 };
