@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const prisma = require('../lib/prisma');
+const env = require('../config/env');
 const { signAccessToken, signRefreshToken, verifyToken } = require('../lib/jwt');
 const {
   REFRESH_TOKEN_COOKIE,
@@ -13,12 +14,17 @@ const authenticate = require('../middleware/authenticate');
 
 const router = express.Router();
 
-const loginRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Disabled under test: the app is instantiated once per test run, so the
+// limiter's counter would otherwise persist across unrelated test cases.
+const loginRateLimiter =
+  env.NODE_ENV === 'test'
+    ? (req, res, next) => next()
+    : rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 5,
+        standardHeaders: true,
+        legacyHeaders: false,
+      });
 
 router.post('/login', loginRateLimiter, async (req, res) => {
   const { email, password } = req.body || {};

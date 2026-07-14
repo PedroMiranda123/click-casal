@@ -4,6 +4,10 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const env = require('./src/config/env');
 const authRoutes = require('./src/routes/auth');
+const transactionRoutes = require('./src/routes/transactions');
+const balanceRoutes = require('./src/routes/balance');
+const categoryRoutes = require('./src/routes/categories');
+const paymentMethodRoutes = require('./src/routes/paymentMethods');
 
 const app = express();
 
@@ -22,5 +26,9 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/transactions', transactionRoutes);
+app.use('/balance', balanceRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/payment-methods', paymentMethodRoutes);
 
 module.exports = app;

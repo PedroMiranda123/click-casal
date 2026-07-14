@@ -66,3 +66,15 @@ enum Currency {
   DKK
   BRL
 }
+
+model ExchangeRate {
+  id           String   @id @default(cuid())
+  date         DateTime @db.Date
+  fromCurrency Currency
+  toCurrency   Currency
+  rate         Decimal  @db.Decimal(14, 8)
+  note         String?
+  fetchedAt    DateTime @default(now())
+
+  @@unique([date, fromCurrency, toCurrency])
+}
