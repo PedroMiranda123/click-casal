@@ -4,9 +4,6 @@ CREATE TYPE "EventType" AS ENUM ('BIRTHDAY', 'PAYMENT_DUE', 'SPORTS', 'EXERCISE'
 -- CreateEnum
 CREATE TYPE "RecurrenceType" AS ENUM ('NONE', 'YEARLY', 'WEEKLY');
 
--- AlterTable
-ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "personEvents" TEXT;
-
 -- CreateTable
 CREATE TABLE "CalendarEvent" (
     "id" TEXT NOT NULL,

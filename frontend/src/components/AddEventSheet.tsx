@@ -111,8 +111,8 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
             <input
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-              style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', border: '1px solid var(--glass-border)' }}
+              className="w-full rounded-xl px-4 py-3 outline-none"
+              style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', border: '1px solid var(--glass-border)', fontSize: 16 }}
               placeholder="Nome do evento"
               required
               autoFocus
@@ -179,8 +179,15 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
                 type="date"
                 value={startAt}
                 onChange={e => setStartAt(e.target.value)}
-                className="w-full rounded-xl px-3 py-3 text-sm outline-none"
-                style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', border: '1px solid var(--glass-border)' }}
+                className="w-full rounded-xl px-3 py-3 outline-none"
+                style={{
+                  background: 'rgba(0,0,0,0.06)',
+                  color: 'var(--ink)',
+                  border: '1px solid var(--glass-border)',
+                  fontSize: 16,
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                }}
                 required
               />
             </div>
@@ -199,8 +206,15 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
                   type="time"
                   value={startTime}
                   onChange={e => setStartTime(e.target.value)}
-                  className="w-full rounded-xl px-3 py-3 text-sm outline-none"
-                  style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', border: '1px solid var(--glass-border)' }}
+                  className="w-full rounded-xl px-3 py-3 outline-none"
+                  style={{
+                    background: 'rgba(0,0,0,0.06)',
+                    color: 'var(--ink)',
+                    border: '1px solid var(--glass-border)',
+                    fontSize: 16,
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                  }}
                 />
               )}
             </div>
@@ -252,8 +266,8 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={2}
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none"
-              style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', border: '1px solid var(--glass-border)' }}
+              className="w-full rounded-xl px-4 py-3 outline-none resize-none"
+              style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--ink)', border: '1px solid var(--glass-border)', fontSize: 16 }}
               placeholder="Detalhes…"
             />
           </div>

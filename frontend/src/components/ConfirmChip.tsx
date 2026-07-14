@@ -79,8 +79,8 @@ export function ConfirmChip({ parsed, categories, paymentMethods, defaultPayment
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as 'INCOME' | 'EXPENSE')}
-                className="text-xs rounded-lg px-2 py-1 border"
-                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)' }}
+                className="rounded-lg px-2 py-1 border"
+                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)', fontSize: 16 }}
               >
                 <option value="EXPENSE">Gasto</option>
                 <option value="INCOME">Receita</option>
@@ -90,15 +90,15 @@ export function ConfirmChip({ parsed, categories, paymentMethods, defaultPayment
                 inputMode="decimal"
                 value={amountInput}
                 onChange={(e) => setAmountInput(e.target.value)}
-                className="font-amount text-lg font-semibold w-28 rounded-lg px-2 py-1 border"
-                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)' }}
+                className="font-amount font-semibold w-28 rounded-lg px-2 py-1 border"
+                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)', fontSize: 16 }}
                 aria-label="Valor"
               />
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as 'DKK' | 'BRL')}
-                className="text-xs rounded-lg px-2 py-1 border"
-                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)' }}
+                className="rounded-lg px-2 py-1 border"
+                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)', fontSize: 16 }}
               >
                 <option value="DKK">DKK</option>
                 <option value="BRL">BRL</option>
@@ -125,8 +125,8 @@ export function ConfirmChip({ parsed, categories, paymentMethods, defaultPayment
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="mt-2 w-full text-sm rounded-lg px-2 py-1 border"
-                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)' }}
+                className="mt-2 w-full rounded-lg px-2 py-1 border"
+                style={{ borderColor: 'var(--glass-border)', background: 'var(--glass-strong)', color: 'var(--ink)', fontSize: 16 }}
                 placeholder="Descrição"
                 aria-label="Descrição"
               />
@@ -152,8 +152,8 @@ export function ConfirmChip({ parsed, categories, paymentMethods, defaultPayment
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
-            className="flex-1 text-xs rounded-xl px-3 py-2 font-medium border"
-            style={{ borderColor: 'var(--glass-border)', background: 'var(--glass)', color: categoryId ? 'var(--ink)' : 'var(--ink-faint)' }}
+            className="flex-1 rounded-xl px-3 py-2 font-medium border"
+            style={{ borderColor: 'var(--glass-border)', background: 'var(--glass)', color: categoryId ? 'var(--ink)' : 'var(--ink-faint)', fontSize: 16 }}
             aria-label="Categoria"
           >
             <option value="">Categoria…</option>
@@ -166,8 +166,8 @@ export function ConfirmChip({ parsed, categories, paymentMethods, defaultPayment
         <select
           value={paymentMethodId}
           onChange={(e) => setPaymentMethodId(e.target.value)}
-          className="flex-1 text-xs rounded-xl px-3 py-2 font-medium border"
-          style={{ borderColor: 'var(--glass-border)', background: 'var(--glass)', color: 'var(--ink)' }}
+          className="flex-1 rounded-xl px-3 py-2 font-medium border"
+          style={{ borderColor: 'var(--glass-border)', background: 'var(--glass)', color: 'var(--ink)', fontSize: 16 }}
           aria-label="Forma de pagamento"
         >
           {paymentMethods.map((pm) => (
