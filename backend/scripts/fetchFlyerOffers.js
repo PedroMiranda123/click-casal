@@ -1,7 +1,7 @@
 'use strict';
 
 const { refreshFlyerOffers } = require('../src/services/flyerOffers');
-const { matchItemsToOffers } = require('../src/services/aiMatching');
+const { matchItemsToOffers } = require('../src/services/groceryMatching');
 const prisma = require('../src/lib/prisma');
 
 async function run() {
@@ -9,7 +9,7 @@ async function run() {
   const count = await refreshFlyerOffers();
   console.log(`[flyer] Upserted ${count} offers.`);
 
-  console.log('[flyer] Running AI matching for all unchecked items...');
+  console.log('[flyer] Running dictionary matching for all unchecked items...');
   const items = await prisma.shoppingListItem.findMany({ where: { checked: false } });
   if (items.length) {
     await matchItemsToOffers(items);

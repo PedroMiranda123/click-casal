@@ -156,6 +156,9 @@ export default function ShoppingListPage() {
             className="px-9 pb-2 text-xs leading-relaxed"
             style={{ color: 'var(--ink-dim)' }}
           >
+            {item.matchNote && (
+              <p className="mb-0.5 italic">{item.matchNote}</p>
+            )}
             <span className="font-medium" style={{ color: 'var(--gold)' }}>{item.matchedOffer.dealerName}</span>
             {' — '}{item.matchedOffer.name}
             {item.matchedOffer.prePriceOre != null && (

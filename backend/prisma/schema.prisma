@@ -122,6 +122,7 @@ model ShoppingListItem {
   matchedOffer  FlyerOffer? @relation(fields: [matchedOfferId], references: [id])
   matchedOfferId String?
   matchedAt     DateTime?
+  matchNote     String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }

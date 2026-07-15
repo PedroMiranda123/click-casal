@@ -1,12 +1,11 @@
 jest.mock('../src/lib/prisma');
-jest.mock('../src/services/aiMatching');
-jest.mock('@anthropic-ai/sdk');
+jest.mock('../src/services/groceryMatching');
 
 const request = require('supertest');
 const bcrypt = require('bcrypt');
 const app = require('../index');
 const prisma = require('../src/lib/prisma');
-const { matchItemsToOffers } = require('../src/services/aiMatching');
+const { matchItemsToOffers } = require('../src/services/groceryMatching');
 
 const TEST_PASSWORD = 'hunter2';
 
@@ -31,6 +30,7 @@ function makeItem(overrides = {}) {
     checked: false,
     matchedOfferId: null,
     matchedAt: null,
+    matchNote: null,
     matchedOffer: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

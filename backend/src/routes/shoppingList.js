@@ -4,7 +4,7 @@ const { Router } = require('express');
 const { z } = require('zod');
 const prisma = require('../lib/prisma');
 const authenticate = require('../middleware/authenticate');
-const { matchItemsToOffers } = require('../services/aiMatching');
+const { matchItemsToOffers } = require('../services/groceryMatching');
 
 const router = Router();
 router.use(authenticate);
@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
   prisma.shoppingListItem
     .findMany({ where: { userId: req.user.id, checked: false } })
     .then(items => matchItemsToOffers(items))
-    .catch(err => console.error('AI matching error:', err));
+    .catch(err => console.error('Matching error:', err));
 
   res.status(201).json(item);
 });

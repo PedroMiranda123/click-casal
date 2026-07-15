@@ -120,6 +120,7 @@ export interface ShoppingListItem {
   checked: boolean;
   matchedOfferId: string | null;
   matchedAt: string | null;
+  matchNote: string | null;
   matchedOffer: FlyerOffer | null;
   createdAt: string;
   updatedAt: string;
