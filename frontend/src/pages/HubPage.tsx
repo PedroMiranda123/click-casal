@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SettingsMenu } from '../components/SettingsMenu';
+import { NotificationBell } from '../components/NotificationBell';
+import PokeSheet from '../components/PokeSheet';
 import { useAuth } from '../context/AuthContext';
 
 interface HubCard {
@@ -60,6 +63,7 @@ const CARDS: HubCard[] = [
 export function HubPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showPokeSheet, setShowPokeSheet] = useState(false);
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -74,7 +78,10 @@ export function HubPage() {
             </p>
           )}
         </div>
-        <SettingsMenu />
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <SettingsMenu />
+        </div>
       </header>
 
       <main className="flex-1 px-4 pt-3 pb-8">
@@ -150,8 +157,27 @@ export function HubPage() {
               </div>
             )
           )}
+          <button
+            onClick={() => setShowPokeSheet(true)}
+            className="flat-panel rounded-2xl p-4 text-left transition-all active:scale-[0.97] hover:shadow-sm"
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+              style={{ background: 'var(--blue-bg)', color: 'var(--blue)' }}
+            >
+              👉
+            </div>
+            <p className="font-display text-base font-semibold leading-tight" style={{ color: 'var(--ink)' }}>
+              Cutucar
+            </p>
+            <p className="text-xs mt-0.5 leading-snug" style={{ color: 'var(--ink-faint)' }}>
+              Mande uma mensagem
+            </p>
+          </button>
         </div>
       </main>
+
+      {showPokeSheet && <PokeSheet onClose={() => setShowPokeSheet(false)} />}
     </div>
   );
 }
