@@ -68,11 +68,16 @@ async function matchSingleItem(item, offers) {
     return;
   }
 
-  // Find all offers whose productName contains any of the Danish terms
+  // Find all offers whose productName contains the Danish term as a whole word
   const normDa = lookup.da.map(t => normalize(t));
-  const matching = offers.filter(o =>
-    normDa.some(da => normalize(o.name).includes(da))
-  );
+  const matching = offers.filter(o => {
+    const normName = normalize(o.name);
+    return normDa.some(da => {
+      // Escape regex special chars in the term, then require word boundaries
+      const escaped = da.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`(?<![a-zæøå])${escaped}(?![a-zæøå])`, 'i').test(normName);
+    });
+  });
 
   if (!matching.length) {
     await prisma.shoppingListItem.update({
