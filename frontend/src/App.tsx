@@ -19,9 +19,10 @@ export function App() {
             <Route path="/" element={<HubPage />} />
             <Route path="/financas" element={<DashboardPage />} />
             <Route path="/calendario" element={<CalendarPage />} />
-            <Route path="/compras" element={<ShoppingListPage />} />
-            <Route path="/ofertas" element={<OfertasPage />} />
-            <Route path="/folhetos" element={<FolhetosPage />} />
+            <Route path="/compras" element={<ShoppingListPage />}>
+              <Route path="ofertas" element={<OfertasPage />} />
+              <Route path="folhetos" element={<FolhetosPage />} />
+            </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

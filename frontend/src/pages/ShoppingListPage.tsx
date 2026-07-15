@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, Outlet } from 'react-router-dom';
 import { api, apiJson } from '../api';
 import AddItemSheet from '../components/AddItemSheet';
 import type { ShoppingListItem } from '../types';
@@ -9,6 +9,9 @@ function formatPrice(ore: number) {
 }
 
 export default function ShoppingListPage() {
+  const location = useLocation();
+  const isListTab = location.pathname === '/compras';
+
   const [items, setItems] = useState<ShoppingListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -211,71 +214,111 @@ export default function ShoppingListPage() {
         <h1 className="text-xl font-semibold flex-1" style={{ color: 'var(--ink)' }}>Compras</h1>
       </div>
 
-      <div className="px-5">
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-12 rounded-2xl animate-pulse" style={{ background: 'rgba(0,0,0,0.06)' }} />
-            ))}
-          </div>
-        ) : error ? (
-          <p className="text-sm text-center py-8" style={{ color: 'var(--coral)' }}>{error}</p>
-        ) : (
-          <>
-            {/* Active items */}
-            {active.length === 0 && done.length === 0 ? (
-              <p className="text-sm text-center py-10" style={{ color: 'var(--ink-faint)' }}>
-                Lista vazia. Toque + para adicionar.
-              </p>
-            ) : active.length === 0 ? (
-              <p className="text-sm pb-4" style={{ color: 'var(--ink-faint)' }}>Tudo comprado!</p>
-            ) : (
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--glass-strong)', border: '1px solid var(--glass-border)' }}>
-                <ul>
-                  {active.map(renderItem)}
-                </ul>
-              </div>
-            )}
-
-            {/* Done section */}
-            {done.length > 0 && (
-              <div className="mt-4">
-                <button
-                  onClick={() => setDoneOpen(v => !v)}
-                  className="flex items-center gap-2 mb-2 w-full text-left"
-                >
-                  <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--ink-muted)' }}>
-                    Concluídos ({done.length})
-                  </span>
-                  <svg
-                    width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                    strokeLinecap="round" strokeLinejoin="round"
-                    style={{ color: 'var(--ink-muted)', transform: doneOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
-                    aria-hidden="true"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-                {doneOpen && (
-                  <div className="rounded-2xl overflow-hidden opacity-60" style={{ background: 'var(--glass-strong)', border: '1px solid var(--glass-border)' }}>
-                    <ul>{done.map(renderItem)}</ul>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
+      {/* Tab navigation */}
+      <div className="flex gap-4 px-5 pb-4 border-b" style={{ borderColor: 'rgba(27,42,56,0.08)' }}>
+        <Link
+          to="/compras"
+          className="pb-3 text-sm font-medium transition-colors"
+          style={{
+            color: isListTab ? 'var(--gold)' : 'var(--ink-faint)',
+            borderBottom: isListTab ? '2px solid var(--gold)' : 'none',
+          }}
+        >
+          Lista
+        </Link>
+        <Link
+          to="/compras/ofertas"
+          className="pb-3 text-sm font-medium transition-colors"
+          style={{
+            color: location.pathname === '/compras/ofertas' ? 'var(--gold)' : 'var(--ink-faint)',
+            borderBottom: location.pathname === '/compras/ofertas' ? '2px solid var(--gold)' : 'none',
+          }}
+        >
+          Ofertas
+        </Link>
+        <Link
+          to="/compras/folhetos"
+          className="pb-3 text-sm font-medium transition-colors"
+          style={{
+            color: location.pathname === '/compras/folhetos' ? 'var(--gold)' : 'var(--ink-faint)',
+            borderBottom: location.pathname === '/compras/folhetos' ? '2px solid var(--gold)' : 'none',
+          }}
+        >
+          Folhetos
+        </Link>
       </div>
 
-      {/* FAB */}
-      <button
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full text-2xl flex items-center justify-center"
-        style={{ background: 'var(--gold)', boxShadow: '0 4px 20px rgba(201,154,59,0.45)', color: '#fff' }}
-        onClick={() => setSheetOpen(true)}
-        aria-label="Adicionar item"
-      >
-        +
-      </button>
+      {isListTab ? (
+        <div className="px-5">
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-12 rounded-2xl animate-pulse" style={{ background: 'rgba(0,0,0,0.06)' }} />
+              ))}
+            </div>
+          ) : error ? (
+            <p className="text-sm text-center py-8" style={{ color: 'var(--coral)' }}>{error}</p>
+          ) : (
+            <>
+              {/* Active items */}
+              {active.length === 0 && done.length === 0 ? (
+                <p className="text-sm text-center py-10" style={{ color: 'var(--ink-faint)' }}>
+                  Lista vazia. Toque + para adicionar.
+                </p>
+              ) : active.length === 0 ? (
+                <p className="text-sm pb-4" style={{ color: 'var(--ink-faint)' }}>Tudo comprado!</p>
+              ) : (
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--glass-strong)', border: '1px solid var(--glass-border)' }}>
+                  <ul>
+                    {active.map(renderItem)}
+                  </ul>
+                </div>
+              )}
+
+              {/* Done section */}
+              {done.length > 0 && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setDoneOpen(v => !v)}
+                    className="flex items-center gap-2 mb-2 w-full text-left"
+                  >
+                    <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--ink-muted)' }}>
+                      Concluídos ({done.length})
+                    </span>
+                    <svg
+                      width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                      strokeLinecap="round" strokeLinejoin="round"
+                      style={{ color: 'var(--ink-muted)', transform: doneOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}
+                      aria-hidden="true"
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                  {doneOpen && (
+                    <div className="rounded-2xl overflow-hidden opacity-60" style={{ background: 'var(--glass-strong)', border: '1px solid var(--glass-border)' }}>
+                      <ul>{done.map(renderItem)}</ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <Outlet />
+      )}
+
+      {/* FAB — only on Lista tab */}
+      {isListTab && (
+        <button
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full text-2xl flex items-center justify-center"
+          style={{ background: 'var(--gold)', boxShadow: '0 4px 20px rgba(201,154,59,0.45)', color: '#fff' }}
+          onClick={() => setSheetOpen(true)}
+          aria-label="Adicionar item"
+        >
+          +
+        </button>
+      )}
 
       {sheetOpen && (
         <AddItemSheet
