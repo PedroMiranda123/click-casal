@@ -30,7 +30,14 @@ async function fetchOffersForDealer({ dealerId, dealerName }) {
 }
 
 async function refreshFlyerOffers() {
-  const allOffers = (await Promise.all(STORES.map(fetchOffersForDealer))).flat();
+  const results = await Promise.allSettled(STORES.map(fetchOffersForDealer));
+  const allOffers = results.flatMap((r, i) => {
+    if (r.status === 'rejected') {
+      console.error(`[flyer] Skipping ${STORES[i].dealerName}: ${r.reason?.message ?? r.reason}`);
+      return [];
+    }
+    return r.value;
+  });
 
   // Upsert all fetched offers
   await Promise.all(
