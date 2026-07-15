@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { isPushSupported, isCurrentlySubscribed, subscribeToPush, unsubscribeFromPush } from '../lib/push';
+import CalendarCategoryManager from './CalendarCategoryManager';
 
 export function SettingsMenu() {
   const { user, logout } = useAuth();
@@ -9,6 +10,7 @@ export function SettingsMenu() {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -95,6 +97,16 @@ export function SettingsMenu() {
             </div>
           )}
           <button
+            onClick={() => { setOpen(false); setShowCategoryManager(true); }}
+            className="w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+            style={{ color: 'var(--ink)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.06)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+            role="menuitem"
+          >
+            Categorias do calendário
+          </button>
+          <button
             onClick={() => { setOpen(false); logout(); }}
             className="w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors"
             style={{ color: 'var(--coral)' }}
@@ -105,6 +117,10 @@ export function SettingsMenu() {
             Sair
           </button>
         </div>
+      )}
+
+      {showCategoryManager && (
+        <CalendarCategoryManager onClose={() => setShowCategoryManager(false)} />
       )}
     </div>
   );

@@ -1,22 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiJson } from '../api';
-import type { CalendarEvent, EventInput, EventType, RecurrenceType, UserSummary } from '../types';
-
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  BIRTHDAY: '🎂 Aniversário',
-  PAYMENT_DUE: '💳 Vencimento',
-  SPORTS: '⚽ Esporte',
-  EXERCISE: '🏋️ Exercício',
-  GENERAL: '📌 Geral',
-};
-
-const EVENT_TYPE_COLORS: Record<EventType, string> = {
-  BIRTHDAY: '#E879A0',
-  PAYMENT_DUE: '#F59E0B',
-  SPORTS: '#3B82F6',
-  EXERCISE: '#8B5CF6',
-  GENERAL: '#6B7280',
-};
+import type { CalendarEvent, CalendarCategory, EventInput, RecurrenceType, UserSummary } from '../types';
 
 const WEEKDAY_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -28,8 +12,10 @@ interface Props {
 
 export default function AddEventSheet({ users, onCreated, onClose }: Props) {
   const backdropRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<CalendarCategory[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<EventType>('GENERAL');
+  const [categoryId, setCategoryId] = useState<string>('');
   const [personId, setPersonId] = useState<string | null>(null);
   const [startAt, setStartAt] = useState(() => new Date().toISOString().slice(0, 10));
   const [allDay, setAllDay] = useState(true);
@@ -39,6 +25,21 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiJson<CalendarCategory[]>('/calendar-categories')
+      .then(data => {
+        setCategories(data);
+        const generalCat = data.find(c => c.name === 'Geral');
+        if (generalCat) {
+          setCategoryId(generalCat.id);
+        } else if (data.length > 0) {
+          setCategoryId(data[0].id);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingCategories(false));
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -54,13 +55,13 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || !categoryId) return;
 
     const dateStr = allDay ? `${startAt}T00:00:00.000Z` : `${startAt}T${startTime}:00.000Z`;
 
     const body: EventInput = {
       title: title.trim(),
-      type,
+      categoryId,
       personId,
       startAt: dateStr,
       allDay,
@@ -119,26 +120,30 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
             />
           </div>
 
-          {/* Type */}
+          {/* Category */}
           <div>
-            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--ink-muted)' }}>Tipo</label>
-            <div className="flex flex-wrap gap-2">
-              {(Object.keys(EVENT_TYPE_LABELS) as EventType[]).map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                  style={{
-                    background: type === t ? EVENT_TYPE_COLORS[t] : 'rgba(0,0,0,0.06)',
-                    color: type === t ? '#fff' : 'var(--ink)',
-                    border: type === t ? `2px solid ${EVENT_TYPE_COLORS[t]}` : '2px solid transparent',
-                  }}
-                  onClick={() => setType(t)}
-                >
-                  {EVENT_TYPE_LABELS[t]}
-                </button>
-              ))}
-            </div>
+            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--ink-muted)' }}>Categoria</label>
+            {loadingCategories ? (
+              <div className="h-10 rounded-xl animate-pulse" style={{ background: 'rgba(0,0,0,0.06)' }} />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {categories.map(cat => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className="px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1"
+                    style={{
+                      background: categoryId === cat.id ? cat.color : 'rgba(0,0,0,0.06)',
+                      color: categoryId === cat.id ? '#fff' : 'var(--ink)',
+                      border: categoryId === cat.id ? `2px solid ${cat.color}` : '2px solid transparent',
+                    }}
+                    onClick={() => setCategoryId(cat.id)}
+                  >
+                    <span>{cat.icon}</span> {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Person */}
@@ -276,7 +281,7 @@ export default function AddEventSheet({ users, onCreated, onClose }: Props) {
 
           <button
             type="submit"
-            disabled={submitting || !title.trim() || (recurrence === 'WEEKLY' && recurrenceDays.length === 0)}
+            disabled={submitting || !title.trim() || !categoryId || (recurrence === 'WEEKLY' && recurrenceDays.length === 0) || loadingCategories}
             className="w-full py-4 rounded-2xl font-semibold text-sm transition-opacity disabled:opacity-40"
             style={{ background: 'var(--gold)', color: '#fff' }}
           >
