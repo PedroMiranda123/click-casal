@@ -135,6 +135,45 @@ describe('matchItemsToOffers', () => {
     });
   });
 
+  it('does not match "is" (ice cream) inside "pris" or "frisk"', async () => {
+    const offer = makeOffer({ name: 'Frisk appelsinjuice kampagnepris' });
+    prisma.flyerOffer.findMany.mockResolvedValue([offer]);
+    prisma.shoppingListItem.update.mockResolvedValue({});
+
+    await matchItemsToOffers([makeItem({ name: 'sorvete' })]);
+
+    expect(prisma.shoppingListItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: expect.objectContaining({ matchedOfferId: null }),
+    });
+  });
+
+  it('does not match "øl" inside a brand name like "Smøl"', async () => {
+    const offer = makeOffer({ name: 'Smøl snackpose 150g' });
+    prisma.flyerOffer.findMany.mockResolvedValue([offer]);
+    prisma.shoppingListItem.update.mockResolvedValue({});
+
+    await matchItemsToOffers([makeItem({ name: 'cerveja' })]);
+
+    expect(prisma.shoppingListItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: expect.objectContaining({ matchedOfferId: null }),
+    });
+  });
+
+  it('does match "øl" as a standalone word', async () => {
+    const offer = makeOffer({ id: 'offer-øl', name: 'Tuborg øl 6-pak', dealerName: 'Netto', priceOre: 6995 });
+    prisma.flyerOffer.findMany.mockResolvedValue([offer]);
+    prisma.shoppingListItem.update.mockResolvedValue({});
+
+    await matchItemsToOffers([makeItem({ name: 'cerveja' })]);
+
+    expect(prisma.shoppingListItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: expect.objectContaining({ matchedOfferId: 'offer-øl' }),
+    });
+  });
+
   it('sets matchedOfferId to null when item has no dictionary entry', async () => {
     prisma.flyerOffer.findMany.mockResolvedValue([makeOffer()]);
     prisma.shoppingListItem.update.mockResolvedValue({});
