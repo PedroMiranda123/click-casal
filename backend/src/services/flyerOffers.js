@@ -1,16 +1,10 @@
 'use strict';
 
 const prisma = require('../lib/prisma');
+const { STORES } = require('../config/stores');
 
 const TJEK_API = 'https://squid-api.tjek.com/v2/offers';
 const TJEK_TOKEN = '152000596c6e45d9983eab0c14afebea';
-
-const STORES = [
-  { dealerId: '9ba51',  dealerName: 'Netto' },
-  { dealerId: '11deC',  dealerName: 'REMA 1000' },
-  { dealerId: 'DWZE1w', dealerName: '365discount' },
-  { dealerId: '267e1m', dealerName: 'MENY' },
-];
 
 async function fetchOffersForDealer({ dealerId, dealerName }) {
   const url = `${TJEK_API}?dealer_ids=${dealerId}&limit=100`;
