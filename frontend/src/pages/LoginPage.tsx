@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 type Status = 'idle' | 'loading' | 'error_credentials' | 'error_rate_limit' | 'error_generic';
 
 export function LoginPage() {
-  const { user } = useAuth();
+  const { user, refetchUser } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -30,6 +30,7 @@ export function LoginPage() {
       });
 
       if (res.ok) {
+        await refetchUser();
         navigate('/', { replace: true });
         return;
       }
