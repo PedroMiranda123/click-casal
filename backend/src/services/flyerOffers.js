@@ -13,8 +13,13 @@ const STORES = [
 ];
 
 async function fetchOffersForDealer({ dealerId, dealerName }) {
-  const url = `${TJEK_API}?dealer_ids=${dealerId}&limit=200`;
-  const res = await fetch(url, { headers: { 'X-Token': TJEK_TOKEN } });
+  const url = `${TJEK_API}?dealer_ids=${dealerId}&limit=100`;
+  const res = await fetch(url, {
+    headers: {
+      'X-Token': TJEK_TOKEN,
+      'User-Agent': 'Mozilla/5.0 (compatible; ClickCasal/1.0)',
+    },
+  });
   if (!res.ok) throw new Error(`Tjek API ${res.status} for ${dealerName}`);
   const offers = await res.json();
   return offers.map(o => ({
