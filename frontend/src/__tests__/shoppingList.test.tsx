@@ -12,6 +12,7 @@ function makeItem(overrides: Partial<ShoppingListItem> = {}): ShoppingListItem {
     checked: false,
     matchedOfferId: null,
     matchedAt: null,
+    matchNote: null,
     matchedOffer: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -94,7 +95,7 @@ describe('ShoppingListPage — toggle done', () => {
         String(url).includes('/shopping-list/item-1') && init?.method === 'PATCH'
       );
       expect(patchCall).toBeTruthy();
-      const body = JSON.parse(patchCall[1].body);
+      const body = JSON.parse(patchCall![1].body);
       expect(body.checked).toBe(true);
     });
   });
@@ -160,7 +161,7 @@ describe('ShoppingListPage — add item', () => {
         String(url).includes('/shopping-list') && init?.method === 'POST'
       );
       expect(postCall).toBeTruthy();
-      const body = JSON.parse(postCall[1].body);
+      const body = JSON.parse(postCall![1].body);
       expect(body.name).toBe('peito de frango');
     });
 
