@@ -14,6 +14,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       manifest: {
         name: 'Click Casal',
@@ -26,21 +29,6 @@ export default defineConfig({
           { src: '/icons/icon-192.png',          sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: '/icons/icon-512.png',          sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: '/icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        ],
-      },
-      workbox: {
-        // Network-first for API: stale balance data is worse than a slower load
-        runtimeCaching: [
-          {
-            urlPattern: new RegExp('^https://api\\.clickcasal\\.com\\.br/'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 10,
-              expiration: { maxEntries: 100, maxAgeSeconds: 300 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
         ],
       },
     }),

@@ -1,10 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { isPushSupported, isCurrentlySubscribed, subscribeToPush, unsubscribeFromPush } from '../lib/push';
 
 export function SettingsMenu() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isPushSupported()) {
+      setPushSupported(true);
+      isCurrentlySubscribed().then(setPushSubscribed);
+    }
+  }, []);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -15,6 +27,25 @@ export function SettingsMenu() {
     if (open) document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [open]);
+
+  async function handlePushToggle() {
+    setPushLoading(true);
+    setPushError(null);
+    try {
+      if (pushSubscribed) {
+        await unsubscribeFromPush();
+        setPushSubscribed(false);
+      } else {
+        await subscribeToPush();
+        setPushSubscribed(true);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao atualizar notificações';
+      setPushError(msg);
+    } finally {
+      setPushLoading(false);
+    }
+  }
 
   return (
     <div className="relative" ref={menuRef}>
@@ -37,6 +68,32 @@ export function SettingsMenu() {
             <p className="text-sm font-semibold truncate" style={{ color: 'var(--ink)' }}>{user?.name}</p>
             <p className="text-xs truncate" style={{ color: 'var(--ink-faint)' }}>{user?.email}</p>
           </div>
+          {pushSupported && (
+            <div className="px-3 py-2 border-b mb-1" style={{ borderColor: 'rgba(27,42,56,0.08)' }}>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium" style={{ color: 'var(--ink)' }}>Notificações push</label>
+                <button
+                  onClick={handlePushToggle}
+                  disabled={pushLoading}
+                  className="w-11 h-6 rounded-full transition-colors relative"
+                  style={{
+                    background: pushSubscribed ? 'var(--gold)' : 'rgba(27,42,56,0.15)',
+                    opacity: pushLoading ? 0.6 : 1,
+                  }}
+                  aria-label={pushSubscribed ? 'Desativar notificações' : 'Ativar notificações'}
+                >
+                  <div
+                    className="w-5 h-5 rounded-full absolute top-0.5 transition-transform"
+                    style={{
+                      background: '#fff',
+                      transform: pushSubscribed ? 'translateX(1.25rem)' : 'translateX(0.125rem)',
+                    }}
+                  />
+                </button>
+              </div>
+              {pushError && <p className="text-xs mt-1" style={{ color: 'var(--coral)' }}>{pushError}</p>}
+            </div>
+          )}
           <button
             onClick={() => { setOpen(false); logout(); }}
             className="w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors"
