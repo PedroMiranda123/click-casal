@@ -28,7 +28,7 @@ router.get('/offers', async (req, res) => {
   if (!store) return res.status(400).json({ error: 'Unknown dealer_id' });
 
   try {
-    const offers = await tjek(`/offers?dealer_ids=${dealer_id}&limit=200`);
+    const offers = await tjek(`/offers?dealer_ids=${dealer_id}&limit=100`);
     res.json(offers.map(o => ({
       id: o.id,
       name: o.heading,
