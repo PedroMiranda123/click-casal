@@ -13,9 +13,10 @@ model User {
   email         String          @unique
   passwordHash  String
   createdAt     DateTime        @default(now())
-  transactions  Transaction[]
-  personEvents  CalendarEvent[]
-  createdEvents CalendarEvent[] @relation("EventCreator")
+  transactions     Transaction[]
+  personEvents     CalendarEvent[]
+  createdEvents    CalendarEvent[]    @relation("EventCreator")
+  shoppingItems    ShoppingListItem[]
 }
 
 model PaymentMethod {
@@ -110,4 +111,41 @@ enum RecurrenceType {
   NONE
   YEARLY
   WEEKLY
+}
+
+model ShoppingListItem {
+  id            String      @id @default(cuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  name          String
+  checked       Boolean     @default(false)
+  matchedOffer  FlyerOffer? @relation(fields: [matchedOfferId], references: [id])
+  matchedOfferId String?
+  matchedAt     DateTime?
+  matchNote     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model FlyerOffer {
+  id           String             @id @default(cuid())
+  externalId   String             @unique
+  dealerId     String
+  dealerName   String
+  name         String
+  priceOre     Int
+  prePriceOre  Int?
+  validFrom    DateTime
+  validUntil   DateTime
+  fetchedAt    DateTime           @default(now())
+  items        ShoppingListItem[]
+}
+
+model AiUsageLog {
+  id             String   @id @default(cuid())
+  model          String
+  inputTokens    Int
+  outputTokens   Int
+  itemsProcessed Int
+  createdAt      DateTime @default(now())
 }
