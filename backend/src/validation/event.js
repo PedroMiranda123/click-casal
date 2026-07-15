@@ -1,11 +1,10 @@
 const { z } = require('zod');
 
-const EventTypeEnum = z.enum(['BIRTHDAY', 'PAYMENT_DUE', 'SPORTS', 'EXERCISE', 'GENERAL']);
 const RecurrenceTypeEnum = z.enum(['NONE', 'YEARLY', 'WEEKLY']);
 
 const createEventSchema = z.object({
   title: z.string().min(1).max(200),
-  type: EventTypeEnum,
+  categoryId: z.string().min(1),
   personId: z.string().cuid().nullable().optional(),
   startAt: z.string().datetime(),
   allDay: z.boolean().optional().default(true),
@@ -23,7 +22,7 @@ const createEventSchema = z.object({
 
 const updateEventSchema = z.object({
   title: z.string().min(1).max(200).optional(),
-  type: EventTypeEnum.optional(),
+  categoryId: z.string().min(1).optional(),
   personId: z.string().cuid().nullable().optional(),
   startAt: z.string().datetime().optional(),
   allDay: z.boolean().optional(),

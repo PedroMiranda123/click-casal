@@ -5,10 +5,31 @@ const bcrypt = require('bcrypt');
 const app = require('../index');
 const prisma = require('../src/lib/prisma');
 
+// Ensure calendarCategory mock object exists
+if (!prisma.calendarCategory) {
+  prisma.calendarCategory = { findUnique: jest.fn() };
+} else if (!prisma.calendarCategory.findUnique) {
+  prisma.calendarCategory.findUnique = jest.fn();
+}
+
 // Pull the expansion logic out by requiring the route module after mocking
 // (we test expansion via the GET /events endpoint)
 
 const TEST_PASSWORD = 'hunter2';
+
+const TEST_CATEGORY = {
+  id: 'cat-1',
+  name: 'Geral',
+  color: '#6B7280',
+  icon: '📌',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  prisma.calendarCategory.findUnique = jest.fn().mockResolvedValue(TEST_CATEGORY);
+});
 
 async function loginAgent() {
   const user = {
@@ -18,6 +39,8 @@ async function loginAgent() {
     passwordHash: await bcrypt.hash(TEST_PASSWORD, 12),
   };
   prisma.user.findUnique.mockResolvedValue(user);
+  if (!prisma.calendarCategory) prisma.calendarCategory = {};
+  prisma.calendarCategory.findUnique = jest.fn().mockResolvedValue(TEST_CATEGORY);
   const agent = request.agent(app);
   await agent.post('/auth/login').send({ email: user.email, password: TEST_PASSWORD });
   return agent;
@@ -27,7 +50,8 @@ function makeEvent(overrides = {}) {
   return {
     id: 'evt-1',
     title: 'Test',
-    type: 'GENERAL',
+    categoryId: 'cat-1',
+    category: TEST_CATEGORY,
     personId: null,
     person: null,
     startAt: new Date('2024-06-15T00:00:00.000Z'),
@@ -67,7 +91,7 @@ describe('POST /events — validation', () => {
   it('rejects missing title', async () => {
     const agent = await loginAgent();
     const res = await agent.post('/events').send({
-      type: 'GENERAL',
+      categoryId: 'cat-1',
       startAt: '2024-06-15T00:00:00.000Z',
     });
     expect(res.status).toBe(400);
@@ -78,7 +102,7 @@ describe('POST /events — validation', () => {
     prisma.calendarEvent.create.mockResolvedValue(makeEvent());
     const res = await agent.post('/events').send({
       title: 'Run',
-      type: 'EXERCISE',
+      categoryId: 'cat-1',
       startAt: '2024-01-01T00:00:00.000Z',
       recurrence: 'WEEKLY',
       recurrenceDays: [],
@@ -91,7 +115,7 @@ describe('POST /events — validation', () => {
     const agent = await loginAgent();
     const res = await agent.post('/events').send({
       title: 'Birthday',
-      type: 'BIRTHDAY',
+      categoryId: 'cat-1',
       startAt: '2024-06-15T00:00:00.000Z',
       recurrence: 'YEARLY',
       recurrenceDays: [1],
@@ -236,12 +260,13 @@ describe('GET /events — WEEKLY recurrence', () => {
 describe('POST /events — create', () => {
   it('creates a NONE recurrence event', async () => {
     const agent = await loginAgent();
-    const created = makeEvent({ title: 'Dentist', type: 'GENERAL' });
+    const created = makeEvent({ title: 'Dentist', categoryId: 'cat-1' });
     prisma.calendarEvent.create.mockResolvedValue(created);
+    prisma.calendarCategory.findUnique.mockResolvedValue(TEST_CATEGORY);
 
     const res = await agent.post('/events').send({
       title: 'Dentist',
-      type: 'GENERAL',
+      categoryId: 'cat-1',
       startAt: '2024-06-15T09:00:00.000Z',
       allDay: false,
     });
