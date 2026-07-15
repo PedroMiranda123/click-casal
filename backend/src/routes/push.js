@@ -57,21 +57,52 @@ router.post('/unsubscribe', async (req, res) => {
   }
 });
 
-// POST /poke — body { messageId }
+// POST /poke — body { messageId } OR { customText }
 router.post('/poke', async (req, res) => {
-  const { messageId } = req.body || {};
+  const body = req.body || {};
+  const { messageId } = body;
+  const customText = body.customText;
+  const hasMessageId = messageId !== undefined && messageId !== null;
+  const hasCustomText = customText !== undefined && customText !== null;
 
-  if (!messageId) {
-    return res.status(400).json({ error: 'Missing messageId' });
+  // Validate input: must have one, not both
+  if (!hasMessageId && !hasCustomText) {
+    return res.status(400).json({ error: 'Missing messageId or customText' });
   }
 
-  const message = POKE_MESSAGES.find(m => m.id === messageId);
-  if (!message) {
-    return res.status(400).json({ error: 'Invalid messageId' });
+  if (hasMessageId && hasCustomText) {
+    return res.status(400).json({ error: 'Envie messageId OU customText, não os dois' });
+  }
+
+  let pokeTitle, pokeBody, pokeMessageId;
+
+  // Path 1: messageId (existing behavior)
+  if (hasMessageId) {
+    const message = POKE_MESSAGES.find(m => m.id === messageId);
+    if (!message) {
+      return res.status(400).json({ error: 'Invalid messageId' });
+    }
+    pokeTitle = `${message.emoji} Cutucada`;
+    pokeBody = message.text;
+    pokeMessageId = messageId;
+  }
+
+  // Path 2: customText (new)
+  if (hasCustomText) {
+    const trimmed = (customText || '').toString().trim();
+    if (!trimmed) {
+      return res.status(400).json({ error: 'Mensagem vazia' });
+    }
+    if (trimmed.length > 140) {
+      return res.status(400).json({ error: 'Mensagem muito longa (máx 140 caracteres)' });
+    }
+    pokeTitle = '💬 Cutucada';
+    pokeBody = trimmed;
+    pokeMessageId = null;
   }
 
   try {
-    // Check rate limit: max 5 pokes per minute
+    // Check rate limit: max 5 pokes per minute (applies to both paths)
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
     const recentCount = await prisma.notificationLog.count({
       where: {
@@ -93,8 +124,6 @@ router.post('/poke', async (req, res) => {
     }
 
     // Send push notification
-    const pokeTitle = `${message.emoji} Cutucada`;
-    const pokeBody = message.text;
     await sendPushToUser(partnerId, {
       title: pokeTitle,
       body: pokeBody,
@@ -105,7 +134,7 @@ router.post('/poke', async (req, res) => {
     await prisma.notificationLog.create({
       data: {
         type: 'POKE',
-        pokeMessageId: messageId,
+        pokeMessageId,
         fromUserId: req.user.id,
         toUserId: partnerId,
         title: pokeTitle,
