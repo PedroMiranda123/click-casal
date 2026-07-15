@@ -2,25 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, apiJson } from '../api';
 import AddEventSheet from '../components/AddEventSheet';
-import type { CalendarEvent, EventType, UserSummary } from '../types';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const EVENT_TYPE_COLORS: Record<EventType, string> = {
-  BIRTHDAY: '#E879A0',
-  PAYMENT_DUE: '#F59E0B',
-  SPORTS: '#3B82F6',
-  EXERCISE: '#8B5CF6',
-  GENERAL: '#6B7280',
-};
-
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  BIRTHDAY: 'Aniversário',
-  PAYMENT_DUE: 'Vencimento',
-  SPORTS: 'Esporte',
-  EXERCISE: 'Exercício',
-  GENERAL: 'Geral',
-};
+import type { CalendarEvent, CalendarCategory, UserSummary } from '../types';
 
 const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const WEEKDAY_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
@@ -44,6 +26,7 @@ export default function CalendarPage() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [categories, setCategories] = useState<CalendarCategory[]>([]);
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +53,7 @@ export default function CalendarPage() {
 
   useEffect(() => {
     apiJson<UserSummary[]>('/users').then(setUsers).catch(() => {});
+    apiJson<CalendarCategory[]>('/calendar-categories').then(setCategories).catch(() => {});
   }, []);
 
   async function handleDeleteEvent(id: string) {
@@ -193,7 +177,7 @@ export default function CalendarPage() {
                     <span
                       key={ei}
                       className="w-1.5 h-1.5 rounded-full"
-                      style={{ background: isSelected ? 'rgba(255,255,255,0.7)' : EVENT_TYPE_COLORS[evt.type] }}
+                      style={{ background: isSelected ? 'rgba(255,255,255,0.7)' : evt.category.color }}
                     />
                   ))}
                 </div>
@@ -205,10 +189,10 @@ export default function CalendarPage() {
 
       {/* Legend */}
       <div className="px-5 mt-4 flex flex-wrap gap-x-4 gap-y-1.5">
-        {(Object.keys(EVENT_TYPE_LABELS) as EventType[]).map(t => (
-          <div key={t} className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: EVENT_TYPE_COLORS[t] }} />
-            <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>{EVENT_TYPE_LABELS[t]}</span>
+        {categories.map(cat => (
+          <div key={cat.id} className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: cat.color }} />
+            <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>{cat.name}</span>
           </div>
         ))}
       </div>
@@ -244,12 +228,12 @@ export default function CalendarPage() {
                     <div className="p-4 flex items-start gap-3">
                       <span
                         className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
-                        style={{ background: EVENT_TYPE_COLORS[evt.type] }}
+                        style={{ background: evt.category.color }}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate" style={{ color: 'var(--ink)' }}>{evt.title}</p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>{EVENT_TYPE_LABELS[evt.type]}</span>
+                          <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>{evt.category.icon} {evt.category.name}</span>
                           {!evt.allDay && (
                             <span className="text-xs" style={{ color: 'var(--ink-muted)' }}>
                               {new Date(evt.startAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}

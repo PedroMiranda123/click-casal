@@ -65,7 +65,6 @@ export interface TransactionList {
   pagination: { page: number; limit: number; total: number };
 }
 
-export type EventType = 'BIRTHDAY' | 'PAYMENT_DUE' | 'SPORTS' | 'EXERCISE' | 'GENERAL';
 export type RecurrenceType = 'NONE' | 'YEARLY' | 'WEEKLY';
 
 export interface UserSummary {
@@ -73,10 +72,20 @@ export interface UserSummary {
   name: string;
 }
 
+export interface CalendarCategory {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CalendarEvent {
   id: string;
   title: string;
-  type: EventType;
+  category: CalendarCategory;
+  categoryId: string;
   person: UserSummary | null;
   personId: string | null;
   startAt: string;
@@ -92,7 +101,7 @@ export interface CalendarEvent {
 
 export interface EventInput {
   title: string;
-  type: EventType;
+  categoryId: string;
   personId: string | null;
   startAt: string;
   allDay: boolean;
