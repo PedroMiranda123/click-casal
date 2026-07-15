@@ -171,6 +171,9 @@ model NotificationLog {
   fromUserId      String?
   toUserId        String
   toUser          User              @relation(fields: [toUserId], references: [id])
+  title           String
+  body            String
+  read            Boolean           @default(false)
   sentAt          DateTime          @default(now())
 }
 

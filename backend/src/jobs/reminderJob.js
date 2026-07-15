@@ -29,7 +29,7 @@ async function sendReminder(event, stage) {
     await sendPushToUser(toUserId, { title, body: event.title, tag: `event-${event.id}-${stage}` });
 
     await prisma.notificationLog.create({
-      data: { type: 'EVENT_REMINDER', calendarEventId: event.id, reminderStage: stage, toUserId },
+      data: { type: 'EVENT_REMINDER', calendarEventId: event.id, reminderStage: stage, toUserId, title, body: event.title },
     });
   }
 }

@@ -21,8 +21,11 @@ async function sendPushToUser(userId, payload) {
 
   await Promise.all(
     results.map((r, i) => {
-      if (r.status === 'rejected' && (r.reason?.statusCode === 410 || r.reason?.statusCode === 404)) {
-        return prisma.pushSubscription.delete({ where: { id: subs[i].id } }).catch(() => {});
+      if (r.status === 'rejected') {
+        if (r.reason?.statusCode === 410 || r.reason?.statusCode === 404) {
+          return prisma.pushSubscription.delete({ where: { id: subs[i].id } }).catch(() => {});
+        }
+        console.error('[webPush] send failed:', r.reason?.statusCode, r.reason?.body || r.reason?.message);
       }
       return null;
     })

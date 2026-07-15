@@ -71,19 +71,18 @@ router.post('/poke', async (req, res) => {
   }
 
   try {
-    // Check rate limit: find most recent poke from this user in the last hour
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recent = await prisma.notificationLog.findFirst({
+    // Check rate limit: max 5 pokes per minute
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+    const recentCount = await prisma.notificationLog.count({
       where: {
         type: 'POKE',
         fromUserId: req.user.id,
-        sentAt: { gte: oneHourAgo },
+        sentAt: { gte: oneMinuteAgo },
       },
-      orderBy: { sentAt: 'desc' },
     });
 
-    if (recent) {
-      return res.status(429).json({ error: 'Você tá sendo inconveniente. Tente novamente daqui 1h' });
+    if (recentCount >= 5) {
+      return res.status(429).json({ error: 'Calma aí! Máximo de 5 cutucadas por minuto.' });
     }
 
     // Find the other user (assumes exactly 2 users in the system)
@@ -94,9 +93,11 @@ router.post('/poke', async (req, res) => {
     }
 
     // Send push notification
+    const pokeTitle = `${message.emoji} Cutucada`;
+    const pokeBody = message.text;
     await sendPushToUser(partnerId, {
-      title: `${message.emoji} Cutucada`,
-      body: message.text,
+      title: pokeTitle,
+      body: pokeBody,
       tag: `poke-${Date.now()}`,
     });
 
@@ -107,6 +108,8 @@ router.post('/poke', async (req, res) => {
         pokeMessageId: messageId,
         fromUserId: req.user.id,
         toUserId: partnerId,
+        title: pokeTitle,
+        body: pokeBody,
       },
     });
 
@@ -114,6 +117,68 @@ router.post('/poke', async (req, res) => {
   } catch (err) {
     console.error('POST /push/poke error:', err);
     res.status(422).json({ error: err?.message ?? 'Failed to send poke' });
+  }
+});
+
+// GET /notifications — returns 50 most recent notifications for user
+router.get('/notifications', async (req, res) => {
+  try {
+    const notifications = await prisma.notificationLog.findMany({
+      where: { toUserId: req.user.id },
+      select: { id: true, type: true, title: true, body: true, read: true, sentAt: true, fromUserId: true },
+      orderBy: { sentAt: 'desc' },
+      take: 50,
+    });
+    res.json(notifications);
+  } catch (err) {
+    console.error('GET /push/notifications error:', err);
+    res.status(422).json({ error: err?.message ?? 'Failed to fetch notifications' });
+  }
+});
+
+// GET /notifications/unread-count — returns count of unread notifications
+router.get('/notifications/unread-count', async (req, res) => {
+  try {
+    const count = await prisma.notificationLog.count({
+      where: { toUserId: req.user.id, read: false },
+    });
+    res.json({ count });
+  } catch (err) {
+    console.error('GET /push/notifications/unread-count error:', err);
+    res.status(422).json({ error: err?.message ?? 'Failed to fetch unread count' });
+  }
+});
+
+// POST /notifications/:id/read — mark notification as read
+router.post('/notifications/:id/read', async (req, res) => {
+  try {
+    const notification = await prisma.notificationLog.findUnique({ where: { id: req.params.id } });
+    if (!notification || notification.toUserId !== req.user.id) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+
+    await prisma.notificationLog.update({
+      where: { id: req.params.id },
+      data: { read: true },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('POST /push/notifications/:id/read error:', err);
+    res.status(422).json({ error: err?.message ?? 'Failed to mark as read' });
+  }
+});
+
+// POST /notifications/read-all — mark all unread notifications as read
+router.post('/notifications/read-all', async (req, res) => {
+  try {
+    const result = await prisma.notificationLog.updateMany({
+      where: { toUserId: req.user.id, read: false },
+      data: { read: true },
+    });
+    res.json({ ok: true, count: result.count });
+  } catch (err) {
+    console.error('POST /push/notifications/read-all error:', err);
+    res.status(422).json({ error: err?.message ?? 'Failed to mark as read' });
   }
 });
 
