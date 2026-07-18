@@ -19,6 +19,7 @@ model User {
   shoppingItems    ShoppingListItem[]
   pushSubscriptions      PushSubscription[]
   notificationsReceived  NotificationLog[]
+  maintenanceLogs  MaintenanceLog[]
 }
 
 model PaymentMethod {
@@ -188,4 +189,26 @@ enum NotificationType {
 enum ReminderStage {
   DAY_BEFORE
   DAY_OF
+}
+
+model MaintenanceTask {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  frequency     String   // DAILY | WEEKLY | MONTHLY | SEMESTRAL | YEARLY
+  category      String   // ex: "Cozinha", "Banheiro", "Eletrodomésticos", "Geral"
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  logs          MaintenanceLog[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model MaintenanceLog {
+  id          String   @id @default(cuid())
+  task        MaintenanceTask @relation(fields: [taskId], references: [id])
+  taskId      String
+  doneBy      User     @relation(fields: [doneById], references: [id])
+  doneById    String
+  doneAt      DateTime @default(now())
 }
