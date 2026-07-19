@@ -3,24 +3,13 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const authenticate = require('../middleware/authenticate');
 
-// Auth middleware — reutiliza o mesmo padrão do projeto
-const requireAuth = async (req, res, next) => {
-  const jwt = require('jsonwebtoken');
-  const cookie = req.cookies?.auth_token;
-  if (!cookie) return res.status(401).json({ error: 'Não autenticado' });
-  try {
-    req.user = jwt.verify(cookie, process.env.JWT_SECRET);
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-};
+const prisma = new PrismaClient();
 
 // GET /api/maintenance/tasks
 // Retorna todas as tarefas ativas com o último log de cada uma
-router.get('/tasks', requireAuth, async (req, res) => {
+router.get('/tasks', authenticate, async (req, res) => {
   try {
     const tasks = await prisma.maintenanceTask.findMany({
       where: { isActive: true },
@@ -42,7 +31,7 @@ router.get('/tasks', requireAuth, async (req, res) => {
 
 // POST /api/maintenance/tasks/:id/log
 // Registra que a tarefa foi concluída pelo usuário autenticado
-router.post('/tasks/:id/log', requireAuth, async (req, res) => {
+router.post('/tasks/:id/log', authenticate, async (req, res) => {
   const { id } = req.params;
   try {
     const task = await prisma.maintenanceTask.findUnique({ where: { id } });
