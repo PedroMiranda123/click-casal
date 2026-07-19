@@ -7,6 +7,8 @@ const POKE_MESSAGES = [
   { id: 'saudade', text: 'Tô com saudade', emoji: '🥰' },
   { id: 'lixo', text: 'A hora do lixo chegou', emoji: '🗑️' },
   { id: 'fofo', text: 'Só passando pra dizer que você é fofo(a)', emoji: '💛' },
+  { id: 'metro', text: 'Pagar o metro!', emoji: '🚇' },
+  { id: 'sono', text: 'Tô com sono', emoji: '😴' },
 ];
 
 module.exports = { POKE_MESSAGES };

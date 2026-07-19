@@ -21,8 +21,7 @@ const updateSchema = z.object({
 // GET /shopping-list
 router.get('/', async (req, res) => {
   const items = await prisma.shoppingListItem.findMany({
-    where: { userId: req.user.id },
-    include: { matchedOffer: true },
+    include: { matchedOffer: true, user: { select: { id: true, name: true } } },
     orderBy: { createdAt: 'asc' },
   });
   res.json(items);
@@ -37,7 +36,7 @@ router.post('/', async (req, res) => {
 
   const item = await prisma.shoppingListItem.create({
     data: { userId: req.user.id, name: result.data.name },
-    include: { matchedOffer: true },
+    include: { matchedOffer: true, user: { select: { id: true, name: true } } },
   });
 
   // Trigger AI matching in background (non-blocking)
@@ -64,7 +63,7 @@ router.patch('/:id', async (req, res) => {
   const item = await prisma.shoppingListItem.update({
     where: { id: req.params.id },
     data: result.data,
-    include: { matchedOffer: true },
+    include: { matchedOffer: true, user: { select: { id: true, name: true } } },
   });
   res.json(item);
 });

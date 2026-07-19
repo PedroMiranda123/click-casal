@@ -131,6 +131,7 @@ export interface ShoppingListItem {
   matchedAt: string | null;
   matchNote: string | null;
   matchedOffer: FlyerOffer | null;
+  user?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
 }
