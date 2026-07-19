@@ -32,6 +32,12 @@ const CARDS: HubCard[] = [
     route: '/compras',
   },
   {
+    title: 'Manutenção',
+    subtitle: 'Checklist de cuidados da casa',
+    icon: '🔧',
+    route: '/manutencao',
+  },
+  {
     title: 'Viagens',
     subtitle: 'Roteiros e reservas',
     icon: <TravelIcon />,

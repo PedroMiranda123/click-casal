@@ -100,6 +100,22 @@ async function seedStartingBalance() {
   });
 }
 
+// --- Manutenção do AP ---
+const MAINTENANCE_TASKS = require('../src/data/maintenanceTasks');
+
+async function seedMaintenanceTasks() {
+  console.log('Seeding maintenance tasks...');
+  for (const task of MAINTENANCE_TASKS) {
+    const existing = await prisma.maintenanceTask.findFirst({
+      where: { title: task.title },
+    });
+    if (!existing) {
+      await prisma.maintenanceTask.create({ data: task });
+    }
+  }
+  console.log(`✅ ${MAINTENANCE_TASKS.length} maintenance tasks seeded.`);
+}
+
 async function main() {
   await seedUsers();
   await upsertByName('paymentMethod', PAYMENT_METHODS);
@@ -108,6 +124,7 @@ async function main() {
     CATEGORIES.map((c) => ({ ...c, isDefault: true }))
   );
   await seedStartingBalance();
+  await seedMaintenanceTasks();
 }
 
 main()

@@ -145,3 +145,20 @@ export interface TransactionInput {
   occurredAt: string;
   description: string | null;
 }
+
+export interface MaintenanceTask {
+  id: string;
+  title: string;
+  description: string;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SEMESTRAL' | 'YEARLY';
+  category: string;
+  order: number;
+  logs: MaintenanceLog[];
+}
+
+export interface MaintenanceLog {
+  id: string;
+  taskId: string;
+  doneAt: string;
+  doneBy: { id: string; name: string };
+}
