@@ -107,6 +107,29 @@ export default function ShoppingListPage() {
             )}
           </button>
 
+          {/* Avatar */}
+          {item.user && (
+            <span
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                background: item.user.name.toLowerCase().startsWith('p') ? 'var(--blue)' : 'var(--coral)',
+                color: '#fff',
+                fontSize: 10,
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                fontFamily: 'Plus Jakarta Sans, sans-serif',
+              }}
+              title={item.user.name}
+            >
+              {item.user.name[0].toUpperCase()}
+            </span>
+          )}
+
           {/* Name */}
           <span
             className="flex-1 text-sm font-medium"
