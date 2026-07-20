@@ -71,19 +71,24 @@ ${JSON.stringify(itemsJson, null, 2)}`;
     generationConfig: { temperature: 0.2, maxOutputTokens: 2048, responseMimeType: 'application/json' },
   };
 
+  console.log('[gemini] calling API with model:', GEMINI_MODEL);
   const res = await globalThis.fetch(GEMINI_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
+  console.log('[gemini] response status:', res.status);
   if (!res.ok) {
     const err = await res.text();
+    console.error('[gemini] API error:', err.slice(0, 500));
     throw new Error(`Gemini API HTTP ${res.status}: ${err.slice(0, 200)}`);
   }
 
   const data = await res.json();
+  console.log('[gemini] raw response keys:', Object.keys(data));
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  console.log('[gemini] extracted text length:', text.length, 'preview:', text.slice(0, 200));
   const inputTokens = data?.usageMetadata?.promptTokenCount ?? 0;
   const outputTokens = data?.usageMetadata?.candidatesTokenCount ?? 0;
 

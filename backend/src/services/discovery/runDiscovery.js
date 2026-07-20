@@ -47,7 +47,11 @@ async function runDiscovery() {
   }
 
   // 4. Score via Gemini
+  console.log('[discovery] calling Gemini with', newItems.length, 'items');
+  console.log('[discovery] pedro interests:', pedroInterests);
+  console.log('[discovery] ana interests:', anaInterests);
   const scores = await scoreItems(newItems, pedroInterests, anaInterests);
+  console.log('[discovery] Gemini returned scores for', Object.keys(scores).length, 'items');
 
   // 5. Persist only relevant items
   let created = 0;
