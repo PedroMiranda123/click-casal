@@ -68,7 +68,7 @@ ${JSON.stringify(itemsJson, null, 2)}`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 2048 },
+    generationConfig: { temperature: 0.2, maxOutputTokens: 2048, responseMimeType: 'application/json' },
   };
 
   const res = await globalThis.fetch(GEMINI_URL, {
@@ -86,6 +86,11 @@ ${JSON.stringify(itemsJson, null, 2)}`;
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
   const inputTokens = data?.usageMetadata?.promptTokenCount ?? 0;
   const outputTokens = data?.usageMetadata?.candidatesTokenCount ?? 0;
+
+  // Log raw response for debugging
+  if (!text) {
+    console.error('[gemini] empty response, raw data:', JSON.stringify(data).slice(0, 500));
+  }
 
   // Log usage
   await prisma.aiUsageLog.create({
