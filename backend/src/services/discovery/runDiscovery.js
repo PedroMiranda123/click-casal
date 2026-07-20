@@ -42,8 +42,7 @@ async function runDiscovery() {
   console.log(`[discovery] ${newItems.length} new items after dedup (${rawItems.length} fetched, ${existingIds.size} already known)`);
 
   if (newItems.length === 0) {
-    console.log('[discovery] nothing new — done');
-    return { created: 0 };
+    console.log('[discovery] nothing new to store — checking for unscored existing items');
   }
 
   // 4. Store ALL new items first
