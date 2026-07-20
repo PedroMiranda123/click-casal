@@ -20,6 +20,8 @@ model User {
   pushSubscriptions      PushSubscription[]
   notificationsReceived  NotificationLog[]
   maintenanceLogs  MaintenanceLog[]
+  workoutLogs      WorkoutLog[]
+  weeklyResultsWon WeeklyResult[]  @relation("WeeklyWinner")
 }
 
 model PaymentMethod {
@@ -211,4 +213,43 @@ model MaintenanceLog {
   doneBy      User     @relation(fields: [doneById], references: [id])
   doneById    String
   doneAt      DateTime @default(now())
+}
+
+model WorkoutLog {
+  id               String    @id @default(cuid())
+  personId         String
+  person           User      @relation(fields: [personId], references: [id])
+  type             WorkoutType
+  durationMinutes  Int?
+  intensity        WorkoutIntensity?
+  note             String?
+  date             DateTime
+  createdAt        DateTime  @default(now())
+}
+
+enum WorkoutType {
+  MUSCULACAO
+  CORRIDA
+  NATACAO
+  YOGA
+  CAMINHADA
+  FUTEBOL
+  BASQUETE
+  OUTRO
+}
+
+enum WorkoutIntensity {
+  LEVE
+  MODERADO
+  INTENSO
+}
+
+model WeeklyResult {
+  id           String   @id @default(cuid())
+  weekStart    DateTime @unique
+  countPedro   Int
+  countAna     Int
+  winnerId     String?
+  winner       User?    @relation("WeeklyWinner", fields: [winnerId], references: [id])
+  createdAt    DateTime @default(now())
 }
