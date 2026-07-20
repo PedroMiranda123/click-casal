@@ -46,22 +46,15 @@ async function runDiscovery() {
     return { created: 0 };
   }
 
-  // 4. Score via Gemini
-  console.log('[discovery] calling Gemini with', newItems.length, 'items');
-  console.log('[discovery] pedro interests:', pedroInterests);
-  console.log('[discovery] ana interests:', anaInterests);
-  const scores = await scoreItems(newItems, pedroInterests, anaInterests);
-  console.log('[discovery] Gemini returned scores for', Object.keys(scores).length, 'items');
-
-  // 5. Persist only relevant items
+  // 4. Store ALL new items first
   let created = 0;
+  const storedItems = [];
   for (const item of newItems) {
-    const score = scores[item.externalId];
-    if (!score) continue; // Gemini said irrelevant to both
-
     try {
-      const suggestion = await prisma.eventSuggestion.create({
-        data: {
+      const suggestion = await prisma.eventSuggestion.upsert({
+        where: { externalId: item.externalId },
+        update: {},
+        create: {
           source: item.source,
           externalId: item.externalId,
           title: item.title.slice(0, 500),
@@ -76,25 +69,41 @@ async function runDiscovery() {
           status: 'NEW',
         },
       });
-
-      const relevanceData = [];
-      if (score.pedro.relevant) {
-        relevanceData.push({ eventSuggestionId: suggestion.id, userId: pedro.id, reason: score.pedro.reason });
-      }
-      if (score.ana.relevant) {
-        relevanceData.push({ eventSuggestionId: suggestion.id, userId: ana.id, reason: score.ana.reason });
-      }
-
-      if (relevanceData.length > 0) {
-        await prisma.eventSuggestionRelevance.createMany({ data: relevanceData });
-      }
-
+      storedItems.push({ item, suggestion });
       created++;
     } catch (err) {
-      // externalId unique constraint — fine, already exists
-      if (err.code !== 'P2002') {
-        console.error('[discovery] failed to persist item', item.externalId, err.message);
+      console.error('[discovery] failed to store item', item.externalId, err.message);
+    }
+  }
+  console.log(`[discovery] stored ${created} items`);
+
+  // 5. Score via Gemini and create relevance rows (best effort — failures don't block)
+  if (storedItems.length > 0 && (pedroInterests.length > 0 || anaInterests.length > 0)) {
+    try {
+      const scores = await scoreItems(storedItems.map(s => s.item), pedroInterests, anaInterests);
+      console.log('[discovery] Gemini scored', Object.keys(scores).length, 'items as relevant');
+
+      for (const { item, suggestion } of storedItems) {
+        const score = scores[item.externalId];
+        if (!score) continue;
+
+        const relevanceData = [];
+        if (score.pedro?.relevant) {
+          relevanceData.push({ eventSuggestionId: suggestion.id, userId: pedro.id, reason: score.pedro.reason });
+        }
+        if (score.ana?.relevant) {
+          relevanceData.push({ eventSuggestionId: suggestion.id, userId: ana.id, reason: score.ana.reason });
+        }
+
+        if (relevanceData.length > 0) {
+          await prisma.eventSuggestionRelevance.createMany({
+            data: relevanceData,
+            skipDuplicates: true,
+          });
+        }
       }
+    } catch (err) {
+      console.error('[discovery] Gemini scoring failed (events already stored):', err.message);
     }
   }
 
