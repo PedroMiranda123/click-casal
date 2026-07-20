@@ -57,6 +57,7 @@ const CARDS: HubCard[] = [
     title: 'Eventos',
     subtitle: 'O que fazer juntos',
     icon: <EventsIcon />,
+    route: '/eventos',
   },
 ];
 
