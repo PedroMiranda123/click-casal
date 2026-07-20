@@ -38,6 +38,12 @@ const CARDS: HubCard[] = [
     route: '/manutencao',
   },
   {
+    title: 'Fitness',
+    subtitle: 'Treinos e streaks',
+    icon: '🏃',
+    route: '/fitness',
+  },
+  {
     title: 'Viagens',
     subtitle: 'Roteiros e reservas',
     icon: <TravelIcon />,

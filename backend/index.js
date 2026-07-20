@@ -15,6 +15,7 @@ const shoppingListRoutes = require('./src/routes/shoppingList');
 const flyersRoutes = require('./src/routes/flyers');
 const pushRoutes = require('./src/routes/push');
 const maintenanceRoutes = require('./src/routes/maintenance');
+const fitnessRoutes = require('./src/routes/fitness');
 
 const app = express();
 
@@ -44,5 +45,6 @@ app.use('/shopping-list', shoppingListRoutes);
 app.use('/flyers', flyersRoutes);
 app.use('/push', pushRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/fitness', fitnessRoutes);
 
 module.exports = app;
