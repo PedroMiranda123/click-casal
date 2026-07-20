@@ -1,59 +1,66 @@
 'use strict';
 
-// kulturkbh.dk — Copenhagen culture events, page-rendered HTML (no JS execution needed)
-// Categories: Talks, Exhibitions, Music, Literature, Film, Food & Drink, Theatre, Active
+// kulturkbh.dk — Copenhagen culture events
+// API: https://kulturkbh.dk/events-list.json (no auth required, public JSON feed)
+// Fields: date, t (time), title, desc, type, url, location/addr, price, img
 
-const BASE_URL = 'https://www.kulturkbh.dk/en/events/';
+const API_URL = 'https://kulturkbh.dk/events-list.json';
+
+const TYPE_CATEGORY = {
+  musik: 'Music',
+  foredrag: 'Talk',
+  udstilling: 'Exhibition',
+  litteratur: 'Literature',
+  film: 'Film',
+  mad: 'Food & Drink',
+  teater: 'Theatre',
+  active: 'Active',
+  festival: 'Festival',
+};
 
 async function fetch() {
-  const res = await globalThis.fetch(BASE_URL, {
-    headers: { 'Accept-Language': 'en', 'User-Agent': 'Mozilla/5.0 (compatible; click-casal/1.0)' },
+  const res = await globalThis.fetch(`${API_URL}?v=${Date.now()}`, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; click-casal/1.0)' },
   });
   if (!res.ok) throw new Error(`kulturkbh HTTP ${res.status}`);
-  const html = await res.text();
 
-  const events = [];
-  // Extract event cards — adjust selectors if HTML changes
-  // Pattern: look for structured data in <script type="application/ld+json"> blocks first (most reliable)
-  const ldJsonMatches = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi)];
-  for (const match of ldJsonMatches) {
-    try {
-      const obj = JSON.parse(match[1]);
-      const items = Array.isArray(obj) ? obj : [obj];
-      for (const item of items) {
-        if (item['@type'] !== 'Event') continue;
-        const startAt = item.startDate ? new Date(item.startDate) : null;
-        if (!startAt || isNaN(startAt) || startAt < new Date()) continue;
+  const events = await res.json();
+  const now = new Date();
+  const results = [];
+  const seen = new Set();
 
-        const externalId = item.url
-          ? `kkbh_${Buffer.from(item.url).toString('base64').slice(0, 24)}`
-          : `kkbh_${Buffer.from(item.name ?? '').toString('base64').slice(0, 24)}`;
+  for (const e of events) {
+    if (!e.date || !e.title) continue;
 
-        events.push({
-          source: 'kulturkbh',
-          externalId,
-          title: item.name ?? 'Untitled',
-          description: item.description ?? null,
-          venueName: item.location?.name ?? null,
-          city: 'Copenhagen',
-          startAt,
-          url: item.url ?? null,
-          imageUrl: item.image ?? null,
-          category: item.eventAttendanceMode ?? null,
-          kind: 'EVENT',
-        });
-      }
-    } catch {
-      // malformed JSON block — skip
-    }
+    // Build startAt from date + time
+    const timeStr = e.t ? e.t.trim() : '00:00';
+    const startAt = new Date(`${e.date}T${timeStr || '00:00'}:00`);
+    if (isNaN(startAt.getTime())) continue;
+    if (startAt < now) continue;
+
+    const url = e.url ?? null;
+    const externalId = `kkbh_${e.src ?? 'x'}_${e.date}_${e.title.slice(0, 30).replace(/\s+/g, '_')}`;
+
+    if (seen.has(externalId)) continue;
+    seen.add(externalId);
+
+    results.push({
+      source: 'kulturkbh',
+      externalId,
+      title: e.title.slice(0, 500),
+      description: e.desc?.slice(0, 2000) ?? null,
+      venueName: (e.location ?? e.addr ?? null)?.slice(0, 200),
+      city: 'Copenhagen',
+      startAt,
+      url,
+      imageUrl: e.img?.startsWith('http') ? e.img.slice(0, 1000) : null,
+      category: TYPE_CATEGORY[e.type] ?? e.type ?? null,
+      kind: 'EVENT',
+    });
   }
 
-  // Fallback: if ld+json yields nothing, log it so we know to add HTML parsing
-  if (events.length === 0) {
-    console.warn('[kulturkbh] no ld+json Event blocks found — page structure may have changed');
-  }
-
-  return events;
+  console.log(`[kulturkbh] found ${results.length} events`);
+  return results;
 }
 
 module.exports = { fetch };
