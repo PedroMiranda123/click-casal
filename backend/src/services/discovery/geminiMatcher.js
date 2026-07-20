@@ -8,7 +8,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-1.5-flash-latest';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
 
 const MAX_ITEMS_PER_BATCH = 30; // stay well inside context limits
