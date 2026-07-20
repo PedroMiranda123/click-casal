@@ -68,7 +68,7 @@ ${JSON.stringify(itemsJson, null, 2)}`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 2048, responseMimeType: 'application/json' },
+    generationConfig: { temperature: 0.2, maxOutputTokens: 8192, responseMimeType: 'application/json' },
   };
 
   console.log('[gemini] calling API with model:', GEMINI_MODEL);
@@ -87,7 +87,11 @@ ${JSON.stringify(itemsJson, null, 2)}`;
 
   const data = await res.json();
   console.log('[gemini] raw response keys:', Object.keys(data));
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const parts = data?.candidates?.[0]?.content?.parts ?? [];
+  const text = parts
+    .filter(p => !p.thoughtSignature)
+    .map(p => p.text ?? '')
+    .join('');
   console.log('[gemini] extracted text length:', text.length, 'preview:', text.slice(0, 200));
   const inputTokens = data?.usageMetadata?.promptTokenCount ?? 0;
   const outputTokens = data?.usageMetadata?.candidatesTokenCount ?? 0;
