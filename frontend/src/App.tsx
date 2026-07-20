@@ -9,6 +9,7 @@ import ShoppingListPage from './pages/ShoppingListPage';
 import OfertasPage from './pages/OfertasPage';
 import FolhetosPage from './pages/FolhetosPage';
 import ManutencaoPage from './pages/ManutencaoPage';
+import FitnessPage from './pages/FitnessPage';
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
             <Route path="/financas" element={<DashboardPage />} />
             <Route path="/calendario" element={<CalendarPage />} />
             <Route path="/manutencao" element={<ManutencaoPage />} />
+            <Route path="/fitness" element={<FitnessPage />} />
             <Route path="/compras" element={<ShoppingListPage />}>
               <Route path="ofertas" element={<OfertasPage />} />
               <Route path="folhetos" element={<FolhetosPage />} />

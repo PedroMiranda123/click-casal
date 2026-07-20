@@ -163,3 +163,44 @@ export interface MaintenanceLog {
   doneAt: string;
   doneBy: { id: string; name: string };
 }
+
+export type WorkoutType = 'MUSCULACAO' | 'CORRIDA' | 'NATACAO' | 'YOGA' | 'CAMINHADA' | 'FUTEBOL' | 'BASQUETE' | 'OUTRO';
+export type WorkoutIntensity = 'LEVE' | 'MODERADO' | 'INTENSO';
+
+export interface WorkoutLog {
+  id: string;
+  personId: string;
+  person: UserSummary;
+  type: WorkoutType;
+  durationMinutes: number | null;
+  intensity: WorkoutIntensity | null;
+  note: string | null;
+  date: string;
+  createdAt: string;
+}
+
+export interface WeeklyResult {
+  id: string;
+  weekStart: string;
+  countPedro: number;
+  countAna: number;
+  winnerId: string | null;
+  winner: UserSummary | null;
+  createdAt: string;
+}
+
+export interface FitnessStats {
+  streaks: {
+    pedro: { current: number; best: number };
+    ana: { current: number; best: number };
+  };
+  currentWeek: {
+    countPedro: number;
+    countAna: number;
+  };
+  weeklyWins: {
+    pedro: number;
+    ana: number;
+  };
+  recentWeeklyResults: WeeklyResult[];
+}
