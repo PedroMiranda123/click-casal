@@ -77,10 +77,18 @@ async function runDiscovery() {
   console.log(`[discovery] stored ${created} items`);
 
   // Also find existing items with no relevance rows yet and score those too
+  const endOfMonth = new Date();
+  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+  endOfMonth.setDate(1);
+  endOfMonth.setHours(0, 0, 0, 0);
+
   const unscoredExisting = await prisma.eventSuggestion.findMany({
     where: {
       relevances: { none: {} },
-      startAt: { gte: new Date() },
+      startAt: {
+        gte: new Date(),
+        lt: endOfMonth,
+      },
     },
     take: 100,
   });
