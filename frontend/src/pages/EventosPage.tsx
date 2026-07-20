@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { useLocation, useNavigate, Outlet, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 interface Suggestion {
@@ -171,35 +171,22 @@ export default function EventosPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg, #f0eae3)', paddingBottom: 32 }}>
-      {/* Header */}
-      <div style={{ padding: '16px 20px 0', marginBottom: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <button
-            onClick={() => navigate('/')}
-            className="btn-ghost"
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'rgba(255,255,255,0.7)', border: 'none',
-              borderRadius: 20, padding: '6px 14px', fontSize: 14,
-              fontWeight: 600, color: 'var(--ink)', cursor: 'pointer',
-            }}
-          >
-            ← Início
-          </button>
-          <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: 28, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
+    <div className="min-h-dvh flex flex-col">
+      <header className="px-5 pt-12 pb-0">
+        <div className="flex items-center gap-3 mb-4">
+          <Link
+            to="/"
+            className="text-sm font-medium px-3 py-1.5 rounded-full flex-shrink-0 transition-all active:scale-95"
+            style={{ color: 'var(--ink-dim)', background: 'rgba(27,42,56,0.07)' }}
+          >← Início</Link>
+          <h1 className="flex-1 text-xl font-semibold" style={{ fontFamily: 'Fraunces, serif', color: 'var(--ink)' }}>
             Eventos
           </h1>
           <button
             onClick={() => navigate('/eventos/interesses')}
-            style={{
-              marginLeft: 'auto', background: 'none', border: 'none',
-              fontSize: 13, fontWeight: 600, color: 'var(--ink-dim)', cursor: 'pointer',
-              padding: '4px 0',
-            }}
-          >
-            Interesses →
-          </button>
+            className="text-sm font-medium flex-shrink-0"
+            style={{ color: 'var(--ink-dim)' }}
+          >Interesses →</button>
         </div>
 
         {/* Tab nav — match Compras exactly */}
@@ -224,12 +211,12 @@ export default function EventosPage() {
             </button>
           ))}
         </div>
-      </div>
+      </header>
 
-      {/* Content */}
-      <div style={{ padding: '12px 20px' }}>
-        {(isEventosTab || isFilmesTab) ? <ListContent /> : <Outlet />}
-      </div>
+      <main className="flex-1 pb-8">
+        <div style={{ padding: '12px 20px' }}>
+          {(isEventosTab || isFilmesTab) ? <ListContent /> : <Outlet />}
+        </div>
 
       {/* Detail bottom sheet */}
       {activeItem && (
@@ -284,6 +271,7 @@ export default function EventosPage() {
           </div>
         </div>
       )}
+      </main>
     </div>
   );
 }

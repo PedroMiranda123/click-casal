@@ -17,6 +17,7 @@
   --gold-bg: rgba(201, 154, 59, 0.15);
   --plum: #9b5fa3;
   --plum-bg: rgba(155, 95, 163, 0.12);
+  --bg: transparent;
 }
 
 * {
