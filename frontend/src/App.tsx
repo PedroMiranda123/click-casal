@@ -10,6 +10,9 @@ import OfertasPage from './pages/OfertasPage';
 import FolhetosPage from './pages/FolhetosPage';
 import ManutencaoPage from './pages/ManutencaoPage';
 import FitnessPage from './pages/FitnessPage';
+import EventosPage from './pages/EventosPage';
+import EventosFilmesPage from './pages/EventosFilmesPage';
+import InteressesPage from './pages/InteressesPage';
 
 export function App() {
   return (
@@ -23,6 +26,10 @@ export function App() {
             <Route path="/calendario" element={<CalendarPage />} />
             <Route path="/manutencao" element={<ManutencaoPage />} />
             <Route path="/fitness" element={<FitnessPage />} />
+            <Route path="/eventos" element={<EventosPage />}>
+              <Route path="filmes" element={<EventosFilmesPage />} />
+              <Route path="interesses" element={<InteressesPage />} />
+            </Route>
             <Route path="/compras" element={<ShoppingListPage />}>
               <Route path="ofertas" element={<OfertasPage />} />
               <Route path="folhetos" element={<FolhetosPage />} />
