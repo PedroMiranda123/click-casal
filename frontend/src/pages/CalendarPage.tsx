@@ -98,18 +98,18 @@ export default function CalendarPage() {
   const todayKey = isoDateKey(today);
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--bg)' }}>
-      {/* Header */}
-      <div className="px-5 pt-14 pb-4 flex items-center gap-3">
+    <div className="min-h-dvh flex flex-col">
+      <header className="flex items-center gap-3 px-5 pt-12 pb-4">
         <Link
           to="/"
-          className="text-sm font-medium px-3 py-1.5 rounded-full"
-          style={{ color: 'var(--ink-muted)', background: 'rgba(0,0,0,0.06)' }}
-        >
-          ← Início
-        </Link>
-        <h1 className="text-xl font-semibold flex-1" style={{ color: 'var(--ink)' }}>Calendário</h1>
-      </div>
+          className="text-sm font-medium px-3 py-1.5 rounded-full flex-shrink-0 transition-all active:scale-95"
+          style={{ color: 'var(--ink-dim)', background: 'rgba(27,42,56,0.07)' }}
+        >← Início</Link>
+        <h1 className="flex-1 text-xl font-semibold" style={{ fontFamily: 'Fraunces, serif', color: 'var(--ink)' }}>
+          Calendário
+        </h1>
+      </header>
+      <main className="flex-1 pb-24">
 
       {/* Month navigator */}
       <div className="px-5 flex items-center justify-between mb-4">
@@ -289,6 +289,8 @@ export default function CalendarPage() {
           )}
         </div>
       )}
+
+      </main>
 
       {/* Gold FAB */}
       <button

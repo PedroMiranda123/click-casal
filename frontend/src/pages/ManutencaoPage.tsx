@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchMaintenanceTasks, logMaintenanceTask } from '../api';
 import type { MaintenanceTask } from '../types';
 
@@ -201,54 +202,21 @@ export default function ManutencaoPage() {
   );
 
   return (
-    <div
-      style={{
-        minHeight: '100dvh',
-        background: 'linear-gradient(135deg, #d4e8f7 0%, #e8d5c4 100%)',
-        paddingBottom: 40,
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          padding: '56px 20px 20px',
-          background: 'var(--glass-strong)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: '1px solid var(--glass-border)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-          <button
-            onClick={() => window.history.back()}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 20,
-              color: 'var(--ink)',
-              padding: 0,
-              lineHeight: 1,
-            }}
-          >
-            ←
-          </button>
-          <h1
-            style={{
-              fontFamily: 'Fraunces, serif',
-              fontSize: 24,
-              fontWeight: 700,
-              color: 'var(--ink)',
-              margin: 0,
-            }}
-          >
+    <div className="min-h-dvh flex flex-col">
+      <header className="flex items-center gap-3 px-5 pt-12 pb-4">
+        <Link
+          to="/"
+          className="text-sm font-medium px-3 py-1.5 rounded-full flex-shrink-0 transition-all active:scale-95"
+          style={{ color: 'var(--ink-dim)', background: 'rgba(27,42,56,0.07)' }}
+        >← Início</Link>
+        <div className="flex-1">
+          <h1 className="text-xl font-semibold" style={{ fontFamily: 'Fraunces, serif', color: 'var(--ink)' }}>
             Manutenção do AP
           </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--ink-dim)' }}>Checklist de cuidados da casa</p>
         </div>
-        <p style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: 13, color: 'var(--ink-dim)', margin: 0, paddingLeft: 32 }}>
-          Checklist de cuidados da casa
-        </p>
-      </div>
+      </header>
+      <main className="flex-1 pb-10">
 
       {/* Frequency tabs */}
       <div
@@ -322,6 +290,7 @@ export default function ManutencaoPage() {
           ))
         )}
       </div>
+      </main>
     </div>
   );
 }
