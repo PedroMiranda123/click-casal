@@ -28,7 +28,7 @@ export default function EventosPage() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<'NEW' | 'ADDED' | 'DISMISSED'>('NEW');
+  const [selectedStatus, setSelectedStatus] = useState<'NEW' | 'ADDED' | 'DISMISSED' | 'ALL'>('NEW');
   const [activeItem, setActiveItem] = useState<Suggestion | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -37,7 +37,7 @@ export default function EventosPage() {
     setError(null);
     try {
       const res = await fetch(
-        `${API}/api/event-suggestions?kind=${kind}&status=${selectedStatus}`,
+        `${API}/api/event-suggestions?kind=${kind}${selectedStatus !== 'ALL' ? `&status=${selectedStatus}` : ''}`,
         { credentials: 'include' }
       );
       if (!res.ok) throw new Error('Erro ao carregar sugestões');
@@ -85,7 +85,7 @@ export default function EventosPage() {
 
   const StatusTabs = () => (
     <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-      {(['NEW', 'ADDED', 'DISMISSED'] as const).map(s => (
+      {(['ALL', 'NEW', 'ADDED', 'DISMISSED'] as const).map(s => (
         <button
           key={s}
           onClick={() => setSelectedStatus(s)}
@@ -101,7 +101,7 @@ export default function EventosPage() {
             transition: 'all 0.15s',
           }}
         >
-          {s === 'NEW' ? 'Novas' : s === 'ADDED' ? 'Salvas' : 'Descartadas'}
+          {s === 'ALL' ? 'Todos' : s === 'NEW' ? 'Novas' : s === 'ADDED' ? 'Salvas' : 'Descartadas'}
         </button>
       ))}
     </div>
