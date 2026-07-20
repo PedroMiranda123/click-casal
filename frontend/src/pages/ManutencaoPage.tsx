@@ -22,7 +22,12 @@ const FREQ_DAYS: Record<string, number> = {
 };
 
 function daysSince(dateStr: string): number {
-  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
+  const now = new Date();
+  const done = new Date(dateStr);
+  // Compare calendar dates, not elapsed hours
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const doneDay = new Date(done.getFullYear(), done.getMonth(), done.getDate());
+  return Math.floor((nowDay.getTime() - doneDay.getTime()) / 86_400_000);
 }
 
 function TaskCard({
@@ -47,10 +52,11 @@ function TaskCard({
     ? 'var(--coral)'
     : 'var(--gold)';
 
+  const daysLabel = days === 0 ? 'hoje' : days === 1 ? 'ontem' : `há ${days}d`;
   const statusLabel = isDone
-    ? `✓ Feito há ${days === 0 ? 'hoje' : `${days}d`} por ${lastLog!.doneBy.name.split(' ')[0]}`
+    ? `✓ Feito ${daysLabel} por ${lastLog!.doneBy.name.split(' ')[0]}`
     : lastLog
-    ? `Última vez há ${days}d`
+    ? `Última vez ${daysLabel}`
     : 'Nunca feito';
 
   async function handleDone(e: React.MouseEvent) {
