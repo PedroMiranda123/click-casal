@@ -11,7 +11,7 @@ const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemini-3.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
 
-const MAX_ITEMS_PER_BATCH = 30; // stay well inside context limits
+const MAX_ITEMS_PER_BATCH = 15; // stay well inside context limits
 
 /**
  * Given a list of normalized suggestion objects and two user interest tag arrays,
@@ -68,7 +68,8 @@ ${JSON.stringify(itemsJson, null, 2)}`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.2, maxOutputTokens: 8192, responseMimeType: 'application/json' },
+    generationConfig: { temperature: 0.2, maxOutputTokens: 16384, responseMimeType: 'application/json' },
+    thinkingConfig: { thinkingBudget: 0 },
   };
 
   console.log('[gemini] calling API with model:', GEMINI_MODEL);
