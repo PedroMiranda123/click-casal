@@ -22,6 +22,8 @@ model User {
   maintenanceLogs  MaintenanceLog[]
   workoutLogs      WorkoutLog[]
   weeklyResultsWon WeeklyResult[]  @relation("WeeklyWinner")
+  interests   UserInterest[]
+  relevances  EventSuggestionRelevance[]
 }
 
 model PaymentMethod {
@@ -151,10 +153,11 @@ model FlyerOffer {
 
 model AiUsageLog {
   id             String   @id @default(cuid())
+  provider       String   // "gemini"
   model          String
+  service        String
   inputTokens    Int
   outputTokens   Int
-  itemsProcessed Int
   createdAt      DateTime @default(now())
 }
 
@@ -252,4 +255,55 @@ model WeeklyResult {
   winnerId     String?
   winner       User?    @relation("WeeklyWinner", fields: [winnerId], references: [id])
   createdAt    DateTime @default(now())
+}
+
+enum SuggestionKind {
+  EVENT
+  MOVIE
+}
+
+enum SuggestionStatus {
+  NEW
+  DISMISSED
+  ADDED
+}
+
+model UserInterest {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  label       String
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, label])
+}
+
+model EventSuggestion {
+  id          String   @id @default(cuid())
+  source      String   // "ticketmaster" | "hidden_nordvest" | "nv_and_more" | "kulturkbh" | "tmdb"
+  externalId  String   @unique
+  title       String
+  description String?
+  venueName   String?
+  city        String?
+  startAt     DateTime
+  url         String?
+  imageUrl    String?
+  category    String?
+  kind        SuggestionKind   @default(EVENT)
+  status      SuggestionStatus @default(NEW)
+  createdAt   DateTime @default(now())
+
+  relevances  EventSuggestionRelevance[]
+}
+
+model EventSuggestionRelevance {
+  id                String          @id @default(cuid())
+  eventSuggestion   EventSuggestion @relation(fields: [eventSuggestionId], references: [id], onDelete: Cascade)
+  eventSuggestionId String
+  user              User            @relation(fields: [userId], references: [id])
+  userId            String
+  reason            String?
+
+  @@unique([eventSuggestionId, userId])
 }
