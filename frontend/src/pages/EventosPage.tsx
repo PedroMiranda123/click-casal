@@ -84,20 +84,20 @@ export default function EventosPage() {
   };
 
   const StatusTabs = () => (
-    <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+    <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid rgba(27,42,56,0.06)', paddingBottom: 8 }}>
       {(['ALL', 'NEW', 'ADDED', 'DISMISSED'] as const).map(s => (
         <button
           key={s}
           onClick={() => setSelectedStatus(s)}
           style={{
-            padding: '6px 14px',
-            borderRadius: 20,
+            padding: '4px 12px',
+            borderRadius: 12,
             border: 'none',
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: 600,
             cursor: 'pointer',
-            background: selectedStatus === s ? 'var(--gold)' : 'var(--gold-bg)',
-            color: selectedStatus === s ? '#fff' : 'var(--ink)',
+            background: selectedStatus === s ? 'var(--gold)' : 'transparent',
+            color: selectedStatus === s ? '#fff' : 'var(--ink-dim)',
             transition: 'all 0.15s',
           }}
         >
@@ -173,23 +173,37 @@ export default function EventosPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg, #f0eae3)', paddingBottom: 32 }}>
       {/* Header */}
-      <div className="glass-panel" style={{ padding: '16px 20px 12px', marginBottom: 8, position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-dim)', fontSize: 14, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ padding: '16px 20px 0', marginBottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <button
+            onClick={() => navigate('/')}
+            className="btn-ghost"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.7)', border: 'none',
+              borderRadius: 20, padding: '6px 14px', fontSize: 14,
+              fontWeight: 600, color: 'var(--ink)', cursor: 'pointer',
+            }}
+          >
             ← Início
           </button>
+          <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: 28, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
+            Eventos
+          </h1>
           <button
             onClick={() => navigate('/eventos/interesses')}
-            style={{ marginLeft: 'auto', background: 'var(--gold-bg)', border: 'none', borderRadius: 20, padding: '6px 14px', fontSize: 13, fontWeight: 600, color: 'var(--ink)', cursor: 'pointer' }}
+            style={{
+              marginLeft: 'auto', background: 'none', border: 'none',
+              fontSize: 13, fontWeight: 600, color: 'var(--ink-dim)', cursor: 'pointer',
+              padding: '4px 0',
+            }}
           >
-            🏷 Interesses
+            Interesses →
           </button>
         </div>
-        <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: 28, fontWeight: 700, color: 'var(--ink)', margin: 0, marginBottom: 12 }}>
-          Eventos
-        </h1>
-        {/* Tab nav */}
-        <div style={{ display: 'flex', gap: 0 }}>
+
+        {/* Tab nav — match Compras exactly */}
+        <div style={{ display: 'flex', gap: 20, borderBottom: '1.5px solid rgba(27,42,56,0.08)', marginBottom: 0 }}>
           {[
             { label: 'Eventos', path: '/eventos' },
             { label: 'Filmes', path: '/eventos/filmes' },
@@ -198,16 +212,12 @@ export default function EventosPage() {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               style={{
-                flex: 1,
-                background: 'none',
-                border: 'none',
+                background: 'none', border: 'none',
                 borderBottom: location.pathname === tab.path ? '2px solid var(--gold)' : '2px solid transparent',
-                padding: '8px 0',
-                fontWeight: 600,
-                fontSize: 14,
-                color: location.pathname === tab.path ? 'var(--ink)' : 'var(--ink-dim)',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
+                paddingBottom: 10, paddingTop: 4,
+                fontWeight: 600, fontSize: 14,
+                color: location.pathname === tab.path ? 'var(--gold)' : 'var(--ink-dim)',
+                cursor: 'pointer', transition: 'all 0.15s',
               }}
             >
               {tab.label}
@@ -217,7 +227,7 @@ export default function EventosPage() {
       </div>
 
       {/* Content */}
-      <div style={{ padding: '16px 20px' }}>
+      <div style={{ padding: '12px 20px' }}>
         {(isEventosTab || isFilmesTab) ? <ListContent /> : <Outlet />}
       </div>
 
