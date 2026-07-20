@@ -77,22 +77,58 @@ async function runDiscovery() {
   }
   console.log(`[discovery] stored ${created} items`);
 
+  // Also find existing items with no relevance rows yet and score those too
+  const unscoredExisting = await prisma.eventSuggestion.findMany({
+    where: {
+      relevances: { none: {} },
+      startAt: { gte: new Date() },
+    },
+    take: 100,
+  });
+
+  const allToScore = [
+    ...storedItems.map(s => s.item),
+    ...unscoredExisting.map(s => ({
+      externalId: s.externalId,
+      title: s.title,
+      description: s.description,
+      category: s.category,
+      kind: s.kind,
+      source: s.source,
+      venueName: s.venueName,
+      city: s.city,
+      startAt: s.startAt,
+      url: s.url,
+      imageUrl: s.imageUrl,
+    })),
+  ];
+
+  // Build a map from externalId to suggestion id for existing items
+  const existingIdMap = {};
+  for (const s of unscoredExisting) {
+    existingIdMap[s.externalId] = s.id;
+  }
+  // Merge with storedItems map
+  for (const { item, suggestion } of storedItems) {
+    existingIdMap[item.externalId] = suggestion.id;
+  }
+
   // 5. Score via Gemini and create relevance rows (best effort — failures don't block)
-  if (storedItems.length > 0 && (pedroInterests.length > 0 || anaInterests.length > 0)) {
+  if (allToScore.length > 0 && (pedroInterests.length > 0 || anaInterests.length > 0)) {
     try {
-      const scores = await scoreItems(storedItems.map(s => s.item), pedroInterests, anaInterests);
+      const scores = await scoreItems(allToScore, pedroInterests, anaInterests);
       console.log('[discovery] Gemini scored', Object.keys(scores).length, 'items as relevant');
 
-      for (const { item, suggestion } of storedItems) {
-        const score = scores[item.externalId];
-        if (!score) continue;
+      for (const [externalId, score] of Object.entries(scores)) {
+        const suggestionId = existingIdMap[externalId];
+        if (!suggestionId) continue;
 
         const relevanceData = [];
         if (score.pedro?.relevant) {
-          relevanceData.push({ eventSuggestionId: suggestion.id, userId: pedro.id, reason: score.pedro.reason });
+          relevanceData.push({ eventSuggestionId: suggestionId, userId: pedro.id, reason: score.pedro.reason });
         }
         if (score.ana?.relevant) {
-          relevanceData.push({ eventSuggestionId: suggestion.id, userId: ana.id, reason: score.ana.reason });
+          relevanceData.push({ eventSuggestionId: suggestionId, userId: ana.id, reason: score.ana.reason });
         }
 
         if (relevanceData.length > 0) {

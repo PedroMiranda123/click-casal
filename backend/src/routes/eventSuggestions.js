@@ -9,20 +9,21 @@ const authenticate = require('../middleware/authenticate');
 // GET /api/event-suggestions — return suggestions relevant to current user, newest first
 // Query params: kind=EVENT|MOVIE, status=NEW|DISMISSED|ADDED
 router.get('/', authenticate, async (req, res) => {
-  const { kind, status = 'NEW' } = req.query;
+  const { kind, status } = req.query;
 
   const VALID_KINDS = ['EVENT', 'MOVIE'];
   const VALID_STATUSES = ['NEW', 'DISMISSED', 'ADDED'];
 
   if (kind && !VALID_KINDS.includes(kind)) return res.status(400).json({ error: 'kind inválido' });
-  if (!VALID_STATUSES.includes(status)) return res.status(400).json({ error: 'status inválido' });
+  if (status && !VALID_STATUSES.includes(status)) return res.status(400).json({ error: 'status inválido' });
 
   try {
+    const showAll = !status;
     const suggestions = await prisma.eventSuggestion.findMany({
       where: {
-        status,
+        ...(status ? { status } : {}),
         ...(kind ? { kind } : {}),
-        relevances: { some: { userId: req.user.id } },
+        ...(showAll ? {} : { relevances: { some: { userId: req.user.id } } }),
       },
       include: {
         relevances: {
