@@ -123,6 +123,21 @@ async function runDiscovery() {
         const suggestionId = existingIdMap[externalId];
         if (!suggestionId) continue;
 
+        // Store PT-BR translations in separate columns
+        if (score.title_pt || score.description_pt) {
+          try {
+            await prisma.eventSuggestion.update({
+              where: { id: suggestionId },
+              data: {
+                ...(score.title_pt ? { titlePt: score.title_pt } : {}),
+                ...(score.description_pt ? { descriptionPt: score.description_pt } : {}),
+              },
+            });
+          } catch (err) {
+            console.error('[discovery] failed to update translation for', externalId, err.message);
+          }
+        }
+
         const relevanceData = [];
         if (score.pedro?.relevant) {
           relevanceData.push({ eventSuggestionId: suggestionId, userId: pedro.id, reason: score.pedro.reason });
@@ -132,10 +147,14 @@ async function runDiscovery() {
         }
 
         if (relevanceData.length > 0) {
-          await prisma.eventSuggestionRelevance.createMany({
-            data: relevanceData,
-            skipDuplicates: true,
-          });
+          try {
+            await prisma.eventSuggestionRelevance.createMany({
+              data: relevanceData,
+              skipDuplicates: true,
+            });
+          } catch (err) {
+            console.error('[discovery] failed to create relevance rows for', externalId, err.message);
+          }
         }
       }
     } catch (err) {
