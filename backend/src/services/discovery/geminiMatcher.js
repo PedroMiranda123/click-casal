@@ -32,8 +32,10 @@ async function scoreItems(items, pedroInterests, anaInterests) {
 }
 
 async function scoreBatch(batch, pedroInterests, anaInterests) {
-  const itemsJson = batch.map(item => ({
-    id: item.externalId,
+  // Use numeric indices as the id sent to Gemini — avoids the model truncating or
+  // mangling long/special-char externalIds when it echoes them back.
+  const itemsJson = batch.map((item, i) => ({
+    id: String(i),
     title: sanitize(item.title),
     description: item.description ? sanitize(item.description) : null,
     category: sanitize(item.category),
@@ -55,13 +57,8 @@ Reply ONLY with a JSON object. No prose. No markdown fences.
 Format:
 {
   "results": [
-    {
-      "id": "<id>",
-      "title_pt": "título em português",
-      "description_pt": "descrição em português ou null",
-      "pedro": { "relevant": true, "reason": "razão curta em PT-BR" },
-      "ana": { "relevant": false, "reason": null }
-    }
+    { "id": "0", "pedro": { "relevant": true, "reason": "short reason in PT-BR" }, "ana": { "relevant": false, "reason": null } },
+    ...
   ]
 }
 
@@ -138,8 +135,51 @@ ${JSON.stringify(itemsJson, null, 2)}`;
     }
   }
 
-  throw lastError;
-}
+  const data = await res.json();
+  console.log('[gemini] raw response keys:', Object.keys(data));
+  const parts = data?.candidates?.[0]?.content?.parts ?? [];
+  const text = parts
+    .map(p => p.text ?? '')
+    .join('');
+  console.log('[gemini] extracted text length:', text.length, 'preview:', text.slice(0, 200));
+  const inputTokens = data?.usageMetadata?.promptTokenCount ?? 0;
+  const outputTokens = data?.usageMetadata?.candidatesTokenCount ?? 0;
+
+  // Log raw response for debugging
+  if (!text) {
+    console.error('[gemini] empty response, raw data:', JSON.stringify(data).slice(0, 500));
+  }
+
+  // Log usage
+  await prisma.aiUsageLog.create({
+    data: {
+      provider: 'gemini',
+      model: GEMINI_MODEL,
+      service: 'event-discovery',
+      inputTokens,
+      outputTokens,
+    },
+  });
+
+  // Parse response
+  const parsed = parseJSON(text);
+  const scoredItems = parsed?.results ?? [];
+
+  const map = {};
+  for (const scored of scoredItems) {
+    if (scored.id == null) continue;
+    const idx = Number(scored.id);
+    if (!Number.isFinite(idx) || idx < 0 || idx >= batch.length) continue;
+    const originalItem = batch[idx];
+
+    const pedroRelevant = scored.pedro?.relevant === true;
+    const anaRelevant = scored.ana?.relevant === true;
+    if (!pedroRelevant && !anaRelevant) continue; // neither cares — don't store
+    map[originalItem.externalId] = {
+      pedro: { relevant: pedroRelevant, reason: sanitize(scored.pedro?.reason) },
+      ana: { relevant: anaRelevant, reason: sanitize(scored.ana?.reason) },
+    };
+  }
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));

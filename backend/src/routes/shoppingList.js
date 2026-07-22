@@ -56,7 +56,7 @@ router.patch('/:id', async (req, res) => {
   }
 
   const existing = await prisma.shoppingListItem.findUnique({ where: { id: req.params.id } });
-  if (!existing || existing.userId !== req.user.id) {
+  if (!existing) {
     return res.status(404).json({ error: 'Not found' });
   }
 
@@ -71,7 +71,7 @@ router.patch('/:id', async (req, res) => {
 // DELETE /shopping-list/:id
 router.delete('/:id', async (req, res) => {
   const existing = await prisma.shoppingListItem.findUnique({ where: { id: req.params.id } });
-  if (!existing || existing.userId !== req.user.id) {
+  if (!existing) {
     return res.status(404).json({ error: 'Not found' });
   }
   await prisma.shoppingListItem.delete({ where: { id: req.params.id } });

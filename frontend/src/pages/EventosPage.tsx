@@ -43,7 +43,10 @@ export default function EventosPage() {
         { credentials: 'include' }
       );
       if (!res.ok) throw new Error('Erro ao carregar sugestões');
-      setSuggestions(await res.json());
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const data: Suggestion[] = await res.json();
+      setSuggestions(data.filter(s => new Date(s.startAt) >= startOfToday));
     } catch (e: any) {
       setError(e.message);
     } finally {

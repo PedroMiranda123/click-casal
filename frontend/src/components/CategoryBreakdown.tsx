@@ -1,5 +1,5 @@
 import type { CategoryBreakdown as CB } from '../types';
-import { formatDKK } from '../lib/format';
+import { formatDKK, maskAmount } from '../lib/format';
 import { ErrorCard } from './ErrorCard';
 
 interface Props {
@@ -7,13 +7,14 @@ interface Props {
   loading: boolean;
   error: boolean;
   onRetry: () => void;
+  hidden?: boolean;
 }
 
 // Cycle blue → gold → coral for bar colors (no semantic meaning, just variety)
 const BAR_COLORS = ['var(--blue)', 'var(--gold)', 'var(--coral)'];
 const BAR_BG_COLORS = ['var(--blue-bg)', 'var(--gold-bg)', 'var(--coral-bg)'];
 
-export function CategoryBreakdown({ breakdown, loading, error, onRetry }: Props) {
+export function CategoryBreakdown({ breakdown, loading, error, onRetry, hidden = false }: Props) {
   if (loading) {
     return (
       <div className="flat-panel rounded-2xl p-4">
@@ -76,8 +77,11 @@ export function CategoryBreakdown({ breakdown, loading, error, onRetry }: Props)
                   />
                 </div>
               </div>
-              <span className="font-amount text-xs font-medium flex-shrink-0" style={{ color: 'var(--ink)' }}>
-                {formatDKK(item.totalDkk)}
+              <span
+                className="font-amount text-xs font-medium flex-shrink-0"
+                style={{ color: 'var(--ink)', opacity: hidden ? 0.5 : 1, transition: 'opacity 200ms' }}
+              >
+                {hidden ? maskAmount('DKK') : formatDKK(item.totalDkk)}
               </span>
             </li>
           );
