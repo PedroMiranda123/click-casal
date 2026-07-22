@@ -114,14 +114,16 @@ ${JSON.stringify(itemsJson, null, 2)}`;
 
       const map = {};
       for (const scored of scoredItems) {
-        if (!scored.id) continue;
+        if (scored.id == null) continue;
+        const idx = Number(scored.id);
+        if (!Number.isFinite(idx) || idx < 0 || idx >= batch.length) continue;
+        const originalItem = batch[idx];
         const pedroRelevant = scored.pedro?.relevant === true;
         const anaRelevant = scored.ana?.relevant === true;
-        map[scored.id] = {
+        if (!pedroRelevant && !anaRelevant) continue;
+        map[originalItem.externalId] = {
           pedro: { relevant: pedroRelevant, reason: sanitize(scored.pedro?.reason) },
           ana: { relevant: anaRelevant, reason: sanitize(scored.ana?.reason) },
-          title_pt: scored.title_pt ? sanitize(scored.title_pt) : null,
-          description_pt: scored.description_pt ? sanitize(scored.description_pt) : null,
         };
       }
 
@@ -135,51 +137,8 @@ ${JSON.stringify(itemsJson, null, 2)}`;
     }
   }
 
-  const data = await res.json();
-  console.log('[gemini] raw response keys:', Object.keys(data));
-  const parts = data?.candidates?.[0]?.content?.parts ?? [];
-  const text = parts
-    .map(p => p.text ?? '')
-    .join('');
-  console.log('[gemini] extracted text length:', text.length, 'preview:', text.slice(0, 200));
-  const inputTokens = data?.usageMetadata?.promptTokenCount ?? 0;
-  const outputTokens = data?.usageMetadata?.candidatesTokenCount ?? 0;
-
-  // Log raw response for debugging
-  if (!text) {
-    console.error('[gemini] empty response, raw data:', JSON.stringify(data).slice(0, 500));
-  }
-
-  // Log usage
-  await prisma.aiUsageLog.create({
-    data: {
-      provider: 'gemini',
-      model: GEMINI_MODEL,
-      service: 'event-discovery',
-      inputTokens,
-      outputTokens,
-    },
-  });
-
-  // Parse response
-  const parsed = parseJSON(text);
-  const scoredItems = parsed?.results ?? [];
-
-  const map = {};
-  for (const scored of scoredItems) {
-    if (scored.id == null) continue;
-    const idx = Number(scored.id);
-    if (!Number.isFinite(idx) || idx < 0 || idx >= batch.length) continue;
-    const originalItem = batch[idx];
-
-    const pedroRelevant = scored.pedro?.relevant === true;
-    const anaRelevant = scored.ana?.relevant === true;
-    if (!pedroRelevant && !anaRelevant) continue; // neither cares — don't store
-    map[originalItem.externalId] = {
-      pedro: { relevant: pedroRelevant, reason: sanitize(scored.pedro?.reason) },
-      ana: { relevant: anaRelevant, reason: sanitize(scored.ana?.reason) },
-    };
-  }
+  throw lastError;
+}
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
