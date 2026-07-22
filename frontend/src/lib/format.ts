@@ -33,3 +33,8 @@ export function toMinorUnits(humanValue: string): number {
 export function toHumanDecimal(minorUnits: number): string {
   return (minorUnits / 100).toFixed(2);
 }
+
+/** Returns a masked placeholder preserving the currency symbol. */
+export function maskAmount(currency: 'DKK' | 'BRL'): string {
+  return currency === 'DKK' ? 'DKK ••••' : 'R$ ••••';
+}

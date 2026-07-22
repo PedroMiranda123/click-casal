@@ -38,8 +38,10 @@ async function scoreItems(items, pedroInterests, anaInterests) {
 }
 
 async function scoreBatch(batch, pedroInterests, anaInterests) {
-  const itemsJson = batch.map(item => ({
-    id: item.externalId,
+  // Use numeric indices as the id sent to Gemini — avoids the model truncating or
+  // mangling long/special-char externalIds when it echoes them back.
+  const itemsJson = batch.map((item, i) => ({
+    id: String(i),
     title: sanitize(item.title),
     description: sanitize(item.description),
     category: sanitize(item.category),
@@ -58,7 +60,7 @@ Reply ONLY with a JSON object. No prose. No markdown fences.
 Format:
 {
   "results": [
-    { "id": "<externalId>", "pedro": { "relevant": true, "reason": "short reason in PT-BR" }, "ana": { "relevant": false, "reason": null } },
+    { "id": "0", "pedro": { "relevant": true, "reason": "short reason in PT-BR" }, "ana": { "relevant": false, "reason": null } },
     ...
   ]
 }
@@ -118,11 +120,15 @@ ${JSON.stringify(itemsJson, null, 2)}`;
 
   const map = {};
   for (const scored of scoredItems) {
-    if (!scored.id) continue;
+    if (scored.id == null) continue;
+    const idx = Number(scored.id);
+    if (!Number.isFinite(idx) || idx < 0 || idx >= batch.length) continue;
+    const originalItem = batch[idx];
+
     const pedroRelevant = scored.pedro?.relevant === true;
     const anaRelevant = scored.ana?.relevant === true;
     if (!pedroRelevant && !anaRelevant) continue; // neither cares — don't store
-    map[scored.id] = {
+    map[originalItem.externalId] = {
       pedro: { relevant: pedroRelevant, reason: sanitize(scored.pedro?.reason) },
       ana: { relevant: anaRelevant, reason: sanitize(scored.ana?.reason) },
     };

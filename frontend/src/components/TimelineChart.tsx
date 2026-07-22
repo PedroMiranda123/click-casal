@@ -1,5 +1,5 @@
 import type { DailyPoint } from '../types';
-import { formatDKK } from '../lib/format';
+import { formatDKK, maskAmount } from '../lib/format';
 import { ErrorCard } from './ErrorCard';
 
 interface Props {
@@ -7,9 +7,10 @@ interface Props {
   loading: boolean;
   error: boolean;
   onRetry: () => void;
+  hidden?: boolean;
 }
 
-export function TimelineChart({ timeline, loading, error, onRetry }: Props) {
+export function TimelineChart({ timeline, loading, error, onRetry, hidden = false }: Props) {
   if (loading) {
     return (
       <div className="flat-panel rounded-2xl p-4">
@@ -64,9 +65,9 @@ export function TimelineChart({ timeline, loading, error, onRetry }: Props) {
         <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>Evolução do saldo</p>
         <span
           className="font-amount text-xs font-medium"
-          style={{ color: isPositive ? 'var(--blue)' : 'var(--coral)' }}
+          style={{ color: isPositive ? 'var(--blue)' : 'var(--coral)', opacity: hidden ? 0.5 : 1, transition: 'opacity 200ms' }}
         >
-          {formatDKK(values[values.length - 1])}
+          {hidden ? maskAmount('DKK') : formatDKK(values[values.length - 1])}
         </span>
       </div>
 

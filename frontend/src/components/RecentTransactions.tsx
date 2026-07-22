@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Category, PaymentMethod, Transaction } from '../types';
-import { formatAmount } from '../lib/format';
+import { formatAmount, maskAmount } from '../lib/format';
 import { ErrorCard } from './ErrorCard';
 
 interface Props {
@@ -11,9 +11,10 @@ interface Props {
   error: boolean;
   onRetry: () => void;
   onDelete?: (id: string) => Promise<void>;
+  hidden?: boolean;
 }
 
-export function RecentTransactions({ transactions, categories, paymentMethods, loading, error, onRetry, onDelete }: Props) {
+export function RecentTransactions({ transactions, categories, paymentMethods, loading, error, onRetry, onDelete, hidden = false }: Props) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const catById = new Map(categories.map((c) => [c.id, c]));
@@ -96,8 +97,11 @@ export function RecentTransactions({ transactions, categories, paymentMethods, l
                     {new Date(tx.occurredAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                   </p>
                 </div>
-                <span className="font-amount text-sm font-medium flex-shrink-0" style={{ color }}>
-                  {sign}{formatAmount(tx.originalAmount, tx.originalCurrency)}
+                <span
+                  className="font-amount text-sm font-medium flex-shrink-0"
+                  style={{ color, opacity: hidden ? 0.5 : 1, transition: 'opacity 200ms' }}
+                >
+                  {hidden ? maskAmount(tx.originalCurrency) : `${sign}${formatAmount(tx.originalAmount, tx.originalCurrency)}`}
                 </span>
                 {onDelete && (
                   <button

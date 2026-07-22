@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api, apiJson } from '../api';
 import type { Balance, Category, DailyPoint, PaymentMethod, Summary, Transaction, TransactionList } from '../types';
@@ -29,6 +30,7 @@ export function DashboardPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [hidden, setHidden] = useState<boolean>(() => localStorage.getItem('finances_hidden') === 'true');
 
   const loadBalance = useCallback(async () => {
     setBalanceState('loading');
@@ -69,6 +71,10 @@ export function DashboardPage() {
   useEffect(() => { loadSummary(); }, [loadSummary]);
   useEffect(() => { loadTransactions(); }, [loadTransactions]);
 
+  useEffect(() => {
+    localStorage.setItem('finances_hidden', String(hidden));
+  }, [hidden]);
+
   function handleTransactionConfirmed() {
     loadBalance();
     loadSummary();
@@ -106,7 +112,23 @@ export function DashboardPage() {
             Finanças
           </h1>
         </div>
-        <SettingsMenu />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setHidden((h) => !h)}
+            aria-label={hidden ? 'Mostrar valores' : 'Ocultar valores'}
+            className="flex items-center justify-center rounded-full transition-colors"
+            style={{
+              width: 36,
+              height: 36,
+              background: 'var(--glass)',
+              border: '1px solid var(--glass-border)',
+              color: hidden ? 'var(--ink)' : 'var(--ink-dim)',
+            }}
+          >
+            {hidden ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+          </button>
+          <SettingsMenu />
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 pb-24 space-y-3">
@@ -116,18 +138,21 @@ export function DashboardPage() {
           loading={balanceState === 'loading'}
           error={balanceState === 'error'}
           onRetry={loadBalance}
+          hidden={hidden}
         />
         <CategoryBreakdown
           breakdown={summary?.categoryBreakdown ?? []}
           loading={summaryState === 'loading'}
           error={summaryState === 'error'}
           onRetry={loadSummary}
+          hidden={hidden}
         />
         <TimelineChart
           timeline={timeline}
           loading={summaryState === 'loading'}
           error={summaryState === 'error'}
           onRetry={loadSummary}
+          hidden={hidden}
         />
         <RecentTransactions
           transactions={txList}
@@ -137,6 +162,7 @@ export function DashboardPage() {
           error={txState === 'error'}
           onRetry={loadTransactions}
           onDelete={handleTransactionDeleted}
+          hidden={hidden}
         />
       </main>
 

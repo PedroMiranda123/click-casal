@@ -1,5 +1,5 @@
 import type { DailyPoint } from '../types';
-import { formatDKK } from '../lib/format';
+import { formatDKK, maskAmount } from '../lib/format';
 
 interface Props {
   balanceDkk: number | null;
@@ -7,6 +7,7 @@ interface Props {
   loading: boolean;
   error: boolean;
   onRetry: () => void;
+  hidden?: boolean;
 }
 
 function PulseLine({ timeline }: { timeline: DailyPoint[] }) {
@@ -45,7 +46,7 @@ function PulseLine({ timeline }: { timeline: DailyPoint[] }) {
   );
 }
 
-export function BalanceCard({ balanceDkk, timeline, loading, error, onRetry }: Props) {
+export function BalanceCard({ balanceDkk, timeline, loading, error, onRetry, hidden = false }: Props) {
   if (loading) {
     return (
       <div className="glass-panel rounded-3xl px-5 pt-5 pb-2 h-36">
@@ -74,8 +75,11 @@ export function BalanceCard({ balanceDkk, timeline, loading, error, onRetry }: P
       <p className="text-xs font-medium uppercase tracking-widest mb-1" style={{ color: 'var(--ink-faint)' }}>
         Saldo atual
       </p>
-      <p className="font-display text-4xl font-semibold leading-none mb-4" style={{ color: 'var(--ink)' }}>
-        {formatDKK(balanceDkk ?? 0)}
+      <p
+        className="font-display text-4xl font-semibold leading-none mb-4"
+        style={{ color: 'var(--ink)', opacity: hidden ? 0.5 : 1, transition: 'opacity 200ms' }}
+      >
+        {hidden ? maskAmount('DKK') : formatDKK(balanceDkk ?? 0)}
       </p>
       <PulseLine timeline={timeline} />
     </div>
