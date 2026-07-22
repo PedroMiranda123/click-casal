@@ -6,6 +6,8 @@ interface Suggestion {
   source: string;
   title: string;
   description: string | null;
+  titlePt: string | null;
+  descriptionPt: string | null;
   venueName: string | null;
   city: string | null;
   startAt: string;
@@ -126,7 +128,7 @@ export default function EventosPage() {
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)', marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {item.title}
+            {item.titlePt ?? item.title}
           </div>
           {item.venueName && (
             <div style={{ fontSize: 13, color: 'var(--ink-dim)', marginBottom: 2 }}>📍 {item.venueName}</div>
@@ -236,16 +238,16 @@ export default function EventosPage() {
               <img src={activeItem.imageUrl} alt={activeItem.title} style={{ width: '100%', height: 180, objectFit: 'cover', borderRadius: 12, marginBottom: 16 }} />
             )}
             <div style={{ fontFamily: 'Fraunces, serif', fontSize: 22, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>
-              {activeItem.title}
+              {activeItem.titlePt ?? activeItem.title}
             </div>
             {activeItem.venueName && <div style={{ color: 'var(--ink-dim)', marginBottom: 4 }}>📍 {activeItem.venueName}</div>}
             <div style={{ color: 'var(--ink-dim)', marginBottom: 4 }}>🗓 {formatDate(activeItem.startAt)}</div>
             {activeItem.reason && (
               <div style={{ color: 'var(--blue)', fontSize: 14, fontStyle: 'italic', marginBottom: 12 }}>✨ {activeItem.reason}</div>
             )}
-            {activeItem.description && (
+            {(activeItem.descriptionPt ?? activeItem.description) && (
               <div style={{ color: 'var(--ink-dim)', fontSize: 14, lineHeight: 1.6, marginBottom: 16 }}>
-                {activeItem.description.slice(0, 400)}{activeItem.description.length > 400 ? '…' : ''}
+                {(activeItem.descriptionPt ?? activeItem.description ?? '').slice(0, 400)}{((activeItem.descriptionPt ?? activeItem.description ?? '').length > 400) ? '…' : ''}
               </div>
             )}
             {activeItem.url && (

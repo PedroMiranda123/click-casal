@@ -1,58 +1,51 @@
 'use strict';
 
 // NV & More — nordvestandmore.com/events
-// Data is embedded as JSON inside a Next.js RSC streaming payload.
-// No separate API; events array is injected server-side into the page response.
+// Uses Next.js RSC streaming endpoint with _rsc param to get a cleaner response
+// Events are embedded as JSON in the RSC payload
 
 const PAGE_URL = 'https://nordvestandmore.com/events?period=next-week';
 
 function extractEvents(html) {
-  const lines = html.split('\n');
-  for (const line of lines) {
-    if (!line.includes('"linkedLocations"') || !line.includes('"tags"')) continue;
+  const events = [];
+  const seen = new Set();
 
-    const eventPattern = /\{"id":"([^"]+)","slug":"([^"]+)","title":"([^"]+)","description":([^,]+(?:,(?!"date")[^,]+)*),"date":"([^"]+)","endDate":"([^"]*)","endTime":"([^"]*)","location":"([^"]*)","organizer":"([^"]*)","source":"[^"]*","instagramHandle":"[^"]*","sourceType":"[^"]*","price":[^,]+,"currency":"[^"]*","maxSpots":[^,]+,"bookedSpots":[^,]+,"eventType":"[^"]*","tags":\[([^\]]*)\],"coverImage":"[^"]*","isRecurring":[^,]+,"recurrenceRule":"[^"]*","stripeProductId":"[^"]*","stripePriceId":"[^"]*","notionUrl":"([^"]*)","ownEvent":[^,]+,"linkedLocations":\[([^\]]*)\]\}/g;
+  // Find the events array by looking for objects with the known event shape
+  // Pattern: {"id":"uuid","slug":"...","title":"...","date":"YYYY-MM-DD"
+  const pattern = /"id":"([0-9a-f-]{36})","slug":"([^"]+)","title":"([^"]+)","description":(?:"((?:[^"\\]|\\.)*)"|(\$\w+)),"date":"(\d{4}-\d{2}-\d{2}(?:T[^"]+)?)"(?:[^}]*)"notionUrl":"([^"]*)"(?:[^}]*)"ownEvent":(true|false)/g;
 
-    const events = [];
-    let m;
-    while ((m = eventPattern.exec(line)) !== null) {
-      const startAt = new Date(m[5]);
-      if (isNaN(startAt) || startAt < new Date()) continue;
+  let m;
+  while ((m = pattern.exec(html)) !== null) {
+    const id = m[1];
+    if (seen.has(id)) continue;
+    seen.add(id);
 
-      let tags = [];
-      try { tags = JSON.parse(`[${m[10]}]`); } catch {}
+    const slug = m[2];
+    const title = m[3];
+    const description = m[4] ?? null;
+    const dateStr = m[6];
+    const notionUrl = m[7];
 
-      let venueName = m[8] || null;
-      if (!venueName && m[12]) {
-        const locName = m[12].match(/"name":"([^"]+)"/);
-        if (locName) venueName = locName[1];
-      }
+    const startAt = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`);
+    if (isNaN(startAt.getTime()) || startAt < new Date()) continue;
 
-      let description = null;
-      try {
-        const raw = m[4].trim();
-        if (raw.startsWith('"') && raw.endsWith('"')) {
-          description = raw.slice(1, -1).replace(/\\n/g, ' ').trim().slice(0, 2000);
-        }
-      } catch {}
-
-      events.push({
-        source: 'nv_and_more',
-        externalId: `nv_${m[1]}`,
-        title: m[3],
-        description,
-        venueName: venueName?.slice(0, 200) ?? null,
-        city: 'Copenhagen',
-        startAt,
-        url: `https://nordvestandmore.com/events/${m[2]}`,
-        imageUrl: null,
-        category: tags[0] ?? null,
-        kind: 'EVENT',
-      });
-    }
-    if (events.length > 0) return events;
+    events.push({
+      source: 'nv_and_more',
+      externalId: `nv_${id}`,
+      title: title.slice(0, 500),
+      description: description?.replace(/\\n/g, ' ').replace(/\\"/g, '"').slice(0, 2000) ?? null,
+      venueName: null,
+      city: 'Copenhagen',
+      startAt,
+      url: notionUrl?.startsWith('http') ? notionUrl : `https://nordvestandmore.com/events/${slug}`,
+      imageUrl: null,
+      category: null,
+      kind: 'EVENT',
+    });
   }
-  return [];
+
+  console.log(`[nv_and_more] extracted ${events.length} events`);
+  return events;
 }
 
 async function fetch() {
@@ -60,13 +53,13 @@ async function fetch() {
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; click-casal/1.0)',
       'Accept': 'text/html,application/xhtml+xml',
+      'Next-Router-State-Tree': '%5B%22%22%2C%7B%22children%22%3A%5B%22events%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%5D%7D%5D%7D%2Cnull%2Cnull%2Ctrue%5D',
+      'RSC': '1',
     },
   });
   if (!res.ok) throw new Error(`NV & More HTTP ${res.status}`);
   const html = await res.text();
-  const events = extractEvents(html);
-  console.log(`[nv_and_more] found ${events.length} events`);
-  return events;
+  return extractEvents(html);
 }
 
 module.exports = { fetch };

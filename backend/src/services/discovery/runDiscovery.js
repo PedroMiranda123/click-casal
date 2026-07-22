@@ -42,8 +42,7 @@ async function runDiscovery() {
   console.log(`[discovery] ${newItems.length} new items after dedup (${rawItems.length} fetched, ${existingIds.size} already known)`);
 
   if (newItems.length === 0) {
-    console.log('[discovery] nothing new — done');
-    return { created: 0 };
+    console.log('[discovery] nothing new to store — checking for unscored existing items');
   }
 
   // 4. Store ALL new items first
@@ -78,10 +77,18 @@ async function runDiscovery() {
   console.log(`[discovery] stored ${created} items`);
 
   // Also find existing items with no relevance rows yet and score those too
+  const endOfMonth = new Date();
+  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+  endOfMonth.setDate(1);
+  endOfMonth.setHours(0, 0, 0, 0);
+
   const unscoredExisting = await prisma.eventSuggestion.findMany({
     where: {
       relevances: { none: {} },
-      startAt: { gte: new Date() },
+      startAt: {
+        gte: new Date(),
+        lt: endOfMonth,
+      },
     },
     take: 100,
   });
@@ -123,6 +130,21 @@ async function runDiscovery() {
         const suggestionId = existingIdMap[externalId];
         if (!suggestionId) continue;
 
+        // Store PT-BR translations in separate columns
+        if (score.title_pt || score.description_pt) {
+          try {
+            await prisma.eventSuggestion.update({
+              where: { id: suggestionId },
+              data: {
+                ...(score.title_pt ? { titlePt: score.title_pt } : {}),
+                ...(score.description_pt ? { descriptionPt: score.description_pt } : {}),
+              },
+            });
+          } catch (err) {
+            console.error('[discovery] failed to update translation for', externalId, err.message);
+          }
+        }
+
         const relevanceData = [];
         if (score.pedro?.relevant) {
           relevanceData.push({ eventSuggestionId: suggestionId, userId: pedro.id, reason: score.pedro.reason });
@@ -132,10 +154,14 @@ async function runDiscovery() {
         }
 
         if (relevanceData.length > 0) {
-          await prisma.eventSuggestionRelevance.createMany({
-            data: relevanceData,
-            skipDuplicates: true,
-          });
+          try {
+            await prisma.eventSuggestionRelevance.createMany({
+              data: relevanceData,
+              skipDuplicates: true,
+            });
+          } catch (err) {
+            console.error('[discovery] failed to create relevance rows for', externalId, err.message);
+          }
         }
       }
     } catch (err) {
