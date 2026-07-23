@@ -13,6 +13,7 @@ import FitnessPage from './pages/FitnessPage';
 import EventosPage from './pages/EventosPage';
 import EventosFilmesPage from './pages/EventosFilmesPage';
 import InteressesPage from './pages/InteressesPage';
+import WrappedPage from './pages/WrappedPage';
 
 export function App() {
   return (
@@ -34,6 +35,7 @@ export function App() {
               <Route path="ofertas" element={<OfertasPage />} />
               <Route path="folhetos" element={<FolhetosPage />} />
             </Route>
+            <Route path="/wrapped" element={<WrappedPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
