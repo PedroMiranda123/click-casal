@@ -86,6 +86,34 @@ export function HubPage() {
       </header>
 
       <main className="flex-1 px-4 pt-3 pb-8">
+        {/* Wrapped 10 Anos — banner de entrada */}
+        <button
+          onClick={() => navigate('/wrapped')}
+          className="w-full rounded-3xl mb-3 overflow-hidden relative text-left transition-all active:scale-[0.98]"
+          style={{ background: 'var(--ink)', minHeight: 80 }}
+        >
+          {/* Glow dourado */}
+          <div style={{ position: 'absolute', top: '-30%', right: '-5%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,154,59,0.35) 0%, transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '-40%', left: '10%', width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,97,61,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+          <div className="relative z-10 flex items-center justify-between px-5 py-4">
+            <div>
+              <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.14em', color: 'var(--gold)', textTransform: 'uppercase', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: 4 }}>
+                ✦ wrapped
+              </div>
+              <div style={{ fontFamily: 'Fraunces, serif', fontSize: '20px', fontWeight: 600, color: 'rgba(255,255,255,0.95)', lineHeight: 1.15 }}>
+                10 Anos juntos
+              </div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 2 }}>
+                23 jul 2016 → 23 jul 2026
+              </div>
+            </div>
+            <div style={{ fontFamily: 'Fraunces, serif', fontSize: '48px', fontWeight: 700, color: 'var(--gold)', lineHeight: 1, opacity: 0.9 }}>
+              10
+            </div>
+          </div>
+        </button>
+
         {/* Finanças — hero card, full width */}
         <button
           onClick={() => navigate('/financas')}
